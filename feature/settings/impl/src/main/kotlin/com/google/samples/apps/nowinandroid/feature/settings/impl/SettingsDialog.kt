@@ -55,6 +55,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
+import com.google.samples.apps.nowinandroid.core.designsystem.component.NiaLoadingWheel
 import com.google.samples.apps.nowinandroid.core.designsystem.component.NiaTextButton
 import com.google.samples.apps.nowinandroid.core.designsystem.theme.NiaTheme
 import com.google.samples.apps.nowinandroid.core.designsystem.theme.supportsDynamicTheming
@@ -118,9 +119,11 @@ fun SettingsDialog(
             Column(Modifier.verticalScroll(rememberScrollState())) {
                 when (settingsUiState) {
                     Loading -> {
-                        Text(
-                            text = stringResource(string.feature_settings_impl_loading),
-                            modifier = Modifier.padding(vertical = 16.dp),
+                        NiaLoadingWheel(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 16.dp),
+                            contentDesc = stringResource(string.feature_settings_impl_loading),
                         )
                     }
 

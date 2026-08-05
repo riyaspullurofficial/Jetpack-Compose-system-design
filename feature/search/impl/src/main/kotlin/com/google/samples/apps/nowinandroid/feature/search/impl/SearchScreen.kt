@@ -34,6 +34,7 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.windowInsetsTopHeight
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
@@ -80,6 +81,7 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.google.samples.apps.nowinandroid.core.designsystem.component.NiaLoadingWheel
 import com.google.samples.apps.nowinandroid.core.designsystem.component.scrollbar.DraggableScrollbar
 import com.google.samples.apps.nowinandroid.core.designsystem.component.scrollbar.rememberDraggableScroller
 import com.google.samples.apps.nowinandroid.core.designsystem.component.scrollbar.scrollbarState
@@ -171,7 +173,17 @@ internal fun SearchScreen(
             searchQuery = searchQuery,
         )
         when (searchResultUiState) {
-            SearchResultUiState.Loading -> Unit
+            SearchResultUiState.Loading -> {
+                NiaLoadingWheel(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .wrapContentSize()
+                        .testTag("search:loading"),
+                    contentDesc = stringResource(id = searchR.string.feature_search_api_loading),
+                )
+            }
+
             SearchResultUiState.LoadFailed -> ErrorCompose()
             SearchResultUiState.SearchNotReady -> SearchNotReadyBody()
             SearchResultUiState.EmptyQuery,

@@ -16,7 +16,7 @@
 
 package com.google.samples.apps.nowinandroid.feature.interests.impl
 
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -64,9 +64,9 @@ internal fun InterestsScreen(
     modifier: Modifier = Modifier,
     shouldHighlightSelectedTopic: Boolean = false,
 ) {
-    Column(
+    Box(
         modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally,
+        contentAlignment = Alignment.Center,
     ) {
         when (uiState) {
             InterestsUiState.Loading ->
