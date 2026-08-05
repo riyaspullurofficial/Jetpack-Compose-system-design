@@ -81,7 +81,9 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.google.samples.apps.nowinandroid.core.common.result.ActionResult
 import com.google.samples.apps.nowinandroid.core.designsystem.component.NiaLoadingWheel
+import com.google.samples.apps.nowinandroid.core.designsystem.component.NiaOverlayLoadingWheel
 import com.google.samples.apps.nowinandroid.core.designsystem.component.scrollbar.DraggableScrollbar
 import com.google.samples.apps.nowinandroid.core.designsystem.component.scrollbar.rememberDraggableScroller
 import com.google.samples.apps.nowinandroid.core.designsystem.component.scrollbar.scrollbarState
@@ -111,12 +113,14 @@ internal fun SearchScreen(
     val searchResultUiState by searchViewModel.searchResultUiState.collectAsStateWithLifecycle()
     val searchQuery by searchViewModel.searchQuery.collectAsStateWithLifecycle()
     val noteToEdit by searchViewModel.noteToEdit.collectAsStateWithLifecycle()
+    val actionResult by searchViewModel.actionResult.collectAsStateWithLifecycle()
 
     SearchScreen(
         modifier = modifier,
         searchQuery = searchQuery,
         recentSearchesUiState = recentSearchQueriesUiState,
         searchResultUiState = searchResultUiState,
+        actionResult = actionResult,
         onSearchQueryChanged = searchViewModel::onSearchQueryChanged,
         onSearchTriggered = searchViewModel::onSearchTriggered,
         onClearRecentSearches = searchViewModel::clearRecentSearches,
@@ -131,6 +135,7 @@ internal fun SearchScreen(
         onDeleteNote = searchViewModel::deleteNote,
         onDismissNoteEdit = searchViewModel::dismissNoteEdit,
         onNoteClick = searchViewModel::onEditNote,
+        onConsumeActionResult = searchViewModel::consumeActionResult,
     )
 }
 
@@ -140,6 +145,7 @@ internal fun SearchScreen(
     searchQuery: String = "",
     recentSearchesUiState: RecentSearchQueriesUiState = RecentSearchQueriesUiState.Loading,
     searchResultUiState: SearchResultUiState = SearchResultUiState.Loading,
+    actionResult: ActionResult<Unit> = ActionResult.Idle,
     onSearchQueryChanged: (String) -> Unit = {},
     onSearchTriggered: (String) -> Unit = {},
     onClearRecentSearches: () -> Unit = {},
@@ -154,8 +160,15 @@ internal fun SearchScreen(
     onDeleteNote: (String) -> Unit = {},
     onDismissNoteEdit: () -> Unit = {},
     onNoteClick: (String, String) -> Unit = { _, _ -> },
+    onConsumeActionResult: () -> Unit = {},
 ) {
     TrackScreenViewEvent(screenName = "Search")
+
+    LaunchedEffect(actionResult) {
+        if (actionResult !is ActionResult.Idle && actionResult !is ActionResult.Loading) {
+            onConsumeActionResult()
+        }
+    }
 
     BookmarkNoteDialog(
         noteToEdit = noteToEdit,
@@ -164,48 +177,31 @@ internal fun SearchScreen(
         onDelete = onDeleteNote,
     )
 
-    Column(modifier = modifier) {
-        Spacer(Modifier.windowInsetsTopHeight(WindowInsets.safeDrawing))
-        SearchToolbar(
-            onBackClick = onBackClick,
-            onSearchQueryChanged = onSearchQueryChanged,
-            onSearchTriggered = onSearchTriggered,
-            searchQuery = searchQuery,
-        )
-        when (searchResultUiState) {
-            SearchResultUiState.Loading -> {
-                NiaLoadingWheel(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                        .wrapContentSize()
-                        .testTag("search:loading"),
-                    contentDesc = stringResource(id = searchR.string.feature_search_api_loading),
-                )
-            }
-
-            is SearchResultUiState.LoadFailed -> ErrorCompose(error = searchResultUiState.error)
-            SearchResultUiState.SearchNotReady -> SearchNotReadyBody()
-            SearchResultUiState.EmptyQuery,
-            -> {
-                if (recentSearchesUiState is RecentSearchQueriesUiState.Success) {
-                    RecentSearchesBody(
-                        onClearRecentSearches = onClearRecentSearches,
-                        onRecentSearchClicked = {
-                            onSearchQueryChanged(it)
-                            onSearchTriggered(it)
-                        },
-                        recentSearchQueries = recentSearchesUiState.recentQueries.map { it.query },
+    Box(modifier = modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            Spacer(Modifier.windowInsetsTopHeight(WindowInsets.safeDrawing))
+            SearchToolbar(
+                onBackClick = onBackClick,
+                onSearchQueryChanged = onSearchQueryChanged,
+                onSearchTriggered = onSearchTriggered,
+                searchQuery = searchQuery,
+            )
+            when (searchResultUiState) {
+                SearchResultUiState.Loading -> {
+                    NiaLoadingWheel(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                            .wrapContentSize()
+                            .testTag("search:loading"),
+                        contentDesc = stringResource(id = searchR.string.feature_search_api_loading),
                     )
                 }
-            }
 
-            is SearchResultUiState.Success -> {
-                if (searchResultUiState.isEmpty()) {
-                    EmptySearchResultBody(
-                        searchQuery = searchQuery,
-                        onInterestsClick = onInterestsClick,
-                    )
+                is SearchResultUiState.LoadFailed -> ErrorCompose(error = searchResultUiState.error)
+                SearchResultUiState.SearchNotReady -> SearchNotReadyBody()
+                SearchResultUiState.EmptyQuery,
+                -> {
                     if (recentSearchesUiState is RecentSearchQueriesUiState.Success) {
                         RecentSearchesBody(
                             onClearRecentSearches = onClearRecentSearches,
@@ -216,22 +212,48 @@ internal fun SearchScreen(
                             recentSearchQueries = recentSearchesUiState.recentQueries.map { it.query },
                         )
                     }
-                } else {
-                    SearchResultBody(
-                        searchQuery = searchQuery,
-                        topics = searchResultUiState.topics,
-                        newsResources = searchResultUiState.newsResources,
-                        onSearchTriggered = onSearchTriggered,
-                        onTopicClick = onTopicClick,
-                        onNewsResourcesCheckedChanged = onNewsResourcesCheckedChanged,
-                        onNewsResourceViewed = onNewsResourceViewed,
-                        onFollowButtonClick = onFollowButtonClick,
-                        onNoteClick = onNoteClick,
-                    )
+                }
+
+                is SearchResultUiState.Success -> {
+                    if (searchResultUiState.isEmpty()) {
+                        EmptySearchResultBody(
+                            searchQuery = searchQuery,
+                            onInterestsClick = onInterestsClick,
+                        )
+                        if (recentSearchesUiState is RecentSearchQueriesUiState.Success) {
+                            RecentSearchesBody(
+                                onClearRecentSearches = onClearRecentSearches,
+                                onRecentSearchClicked = {
+                                    onSearchQueryChanged(it)
+                                    onSearchTriggered(it)
+                                },
+                                recentSearchQueries = recentSearchesUiState.recentQueries.map { it.query },
+                            )
+                        }
+                    } else {
+                        SearchResultBody(
+                            searchQuery = searchQuery,
+                            topics = searchResultUiState.topics,
+                            newsResources = searchResultUiState.newsResources,
+                            onSearchTriggered = onSearchTriggered,
+                            onTopicClick = onTopicClick,
+                            onNewsResourcesCheckedChanged = onNewsResourcesCheckedChanged,
+                            onNewsResourceViewed = onNewsResourceViewed,
+                            onFollowButtonClick = onFollowButtonClick,
+                            onNoteClick = onNoteClick,
+                        )
+                    }
                 }
             }
+            Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.safeDrawing))
         }
-        Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.safeDrawing))
+
+        if (actionResult is ActionResult.Loading) {
+            NiaOverlayLoadingWheel(
+                modifier = Modifier.align(Alignment.Center),
+                contentDesc = "Action in progress",
+            )
+        }
     }
 }
 

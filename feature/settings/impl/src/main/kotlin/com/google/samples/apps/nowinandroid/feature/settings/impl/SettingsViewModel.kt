@@ -21,13 +21,17 @@ import androidx.lifecycle.viewModelScope
 import com.google.samples.apps.nowinandroid.core.data.repository.UserDataRepository
 import com.google.samples.apps.nowinandroid.core.model.data.DarkThemeConfig
 import com.google.samples.apps.nowinandroid.core.model.data.ThemeBrand
+import com.google.samples.apps.nowinandroid.core.common.result.ActionResult
 import com.google.samples.apps.nowinandroid.core.common.result.DomainError
 import com.google.samples.apps.nowinandroid.core.common.result.DomainResult
+import com.google.samples.apps.nowinandroid.core.common.result.toDomainError
 import com.google.samples.apps.nowinandroid.feature.settings.impl.SettingsUiState.Loading
 import com.google.samples.apps.nowinandroid.feature.settings.impl.SettingsUiState.Success
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.SharingStarted.Companion.WhileSubscribed
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -59,26 +63,51 @@ class SettingsViewModel @Inject constructor(
             }
             .stateIn(
                 scope = viewModelScope,
-                started = WhileSubscribed(5.seconds.inWholeMilliseconds),
+                started = SharingStarted.WhileSubscribed(5_000),
                 initialValue = Loading,
             )
 
+    private val _actionResult = MutableStateFlow<ActionResult<Unit>>(ActionResult.Idle)
+    val actionResult: StateFlow<ActionResult<Unit>> = _actionResult.asStateFlow()
+
     fun updateThemeBrand(themeBrand: ThemeBrand) {
         viewModelScope.launch {
-            userDataRepository.setThemeBrand(themeBrand)
+            _actionResult.value = ActionResult.Loading
+            try {
+                userDataRepository.setThemeBrand(themeBrand)
+                _actionResult.value = ActionResult.Success(Unit)
+            } catch (e: Exception) {
+                _actionResult.value = ActionResult.Error(e.toDomainError())
+            }
         }
     }
 
     fun updateDarkThemeConfig(darkThemeConfig: DarkThemeConfig) {
         viewModelScope.launch {
-            userDataRepository.setDarkThemeConfig(darkThemeConfig)
+            _actionResult.value = ActionResult.Loading
+            try {
+                userDataRepository.setDarkThemeConfig(darkThemeConfig)
+                _actionResult.value = ActionResult.Success(Unit)
+            } catch (e: Exception) {
+                _actionResult.value = ActionResult.Error(e.toDomainError())
+            }
         }
     }
 
     fun updateDynamicColorPreference(useDynamicColor: Boolean) {
         viewModelScope.launch {
-            userDataRepository.setDynamicColorPreference(useDynamicColor)
+            _actionResult.value = ActionResult.Loading
+            try {
+                userDataRepository.setDynamicColorPreference(useDynamicColor)
+                _actionResult.value = ActionResult.Success(Unit)
+            } catch (e: Exception) {
+                _actionResult.value = ActionResult.Error(e.toDomainError())
+            }
         }
+    }
+
+    fun consumeActionResult() {
+        _actionResult.value = ActionResult.Idle
     }
 }
 

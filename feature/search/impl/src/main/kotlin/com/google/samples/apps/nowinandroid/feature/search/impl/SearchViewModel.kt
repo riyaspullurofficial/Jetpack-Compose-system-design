@@ -28,7 +28,9 @@ import com.google.samples.apps.nowinandroid.core.analytics.AnalyticsHelper
 import com.google.samples.apps.nowinandroid.core.data.repository.RecentSearchRepository
 import com.google.samples.apps.nowinandroid.core.data.repository.SearchContentsRepository
 import com.google.samples.apps.nowinandroid.core.data.repository.UserDataRepository
+import com.google.samples.apps.nowinandroid.core.common.result.ActionResult
 import com.google.samples.apps.nowinandroid.core.common.result.DomainResult
+import com.google.samples.apps.nowinandroid.core.common.result.toDomainError
 import com.google.samples.apps.nowinandroid.core.domain.GetRecentSearchQueriesUseCase
 import com.google.samples.apps.nowinandroid.core.domain.GetSearchContentsUseCase
 import com.google.samples.apps.nowinandroid.core.domain.UpdateBookmarkNoteUseCase
@@ -37,9 +39,12 @@ import com.google.samples.apps.nowinandroid.core.domain.UpdateNewsResourceViewed
 import com.google.samples.apps.nowinandroid.core.model.data.UserSearchResult
 import com.google.samples.apps.nowinandroid.core.ui.BookmarkNoteViewModelState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -125,6 +130,22 @@ class SearchViewModel @Inject constructor(
                 initialValue = RecentSearchQueriesUiState.Loading,
             )
 
+    private val _actionResult = MutableStateFlow<ActionResult<Unit>>(ActionResult.Idle)
+    val actionResult: StateFlow<ActionResult<Unit>> = combine(
+        _actionResult,
+        bookmarkNoteViewModelState.actionResult,
+    ) { local, common ->
+        if (local is ActionResult.Loading || common is ActionResult.Loading) ActionResult.Loading
+        else if (local is ActionResult.Error) local
+        else if (common is ActionResult.Error) common
+        else if (local is ActionResult.Success<*> || common is ActionResult.Success<*>) ActionResult.Success(Unit)
+        else ActionResult.Idle
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = ActionResult.Idle,
+    )
+
     fun onSearchQueryChanged(query: String) {
         savedStateHandle[SEARCH_QUERY] = query
     }
@@ -139,14 +160,26 @@ class SearchViewModel @Inject constructor(
     fun onSearchTriggered(query: String) {
         if (query.isBlank()) return
         viewModelScope.launch {
-            recentSearchRepository.insertOrReplaceRecentSearch(searchQuery = query)
+            _actionResult.value = ActionResult.Loading
+            try {
+                recentSearchRepository.insertOrReplaceRecentSearch(searchQuery = query)
+                _actionResult.value = ActionResult.Success(Unit)
+            } catch (e: Exception) {
+                _actionResult.value = ActionResult.Error(e.toDomainError())
+            }
         }
         analyticsHelper.logEventSearchTriggered(query = query)
     }
 
     fun clearRecentSearches() {
         viewModelScope.launch {
-            recentSearchRepository.clearRecentSearches()
+            _actionResult.value = ActionResult.Loading
+            try {
+                recentSearchRepository.clearRecentSearches()
+                _actionResult.value = ActionResult.Success(Unit)
+            } catch (e: Exception) {
+                _actionResult.value = ActionResult.Error(e.toDomainError())
+            }
         }
     }
 
@@ -174,14 +207,31 @@ class SearchViewModel @Inject constructor(
 
     fun followTopic(followedTopicId: String, followed: Boolean) {
         viewModelScope.launch {
-            userDataRepository.setTopicIdFollowed(followedTopicId, followed)
+            _actionResult.value = ActionResult.Loading
+            try {
+                userDataRepository.setTopicIdFollowed(followedTopicId, followed)
+                _actionResult.value = ActionResult.Success(Unit)
+            } catch (e: Exception) {
+                _actionResult.value = ActionResult.Error(e.toDomainError())
+            }
         }
     }
 
     fun setNewsResourceViewed(newsResourceId: String, viewed: Boolean) {
         viewModelScope.launch {
-            updateNewsResourceViewedUseCase(newsResourceId, viewed)
+            _actionResult.value = ActionResult.Loading
+            try {
+                updateNewsResourceViewedUseCase(newsResourceId, viewed)
+                _actionResult.value = ActionResult.Success(Unit)
+            } catch (e: Exception) {
+                _actionResult.value = ActionResult.Error(e.toDomainError())
+            }
         }
+    }
+
+    fun consumeActionResult() {
+        _actionResult.value = ActionResult.Idle
+        bookmarkNoteViewModelState.consumeActionResult()
     }
 }
 

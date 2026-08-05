@@ -24,7 +24,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.samples.apps.nowinandroid.core.data.repository.UserDataRepository
 import com.google.samples.apps.nowinandroid.core.data.repository.UserNewsResourceRepository
+import com.google.samples.apps.nowinandroid.core.common.result.ActionResult
 import com.google.samples.apps.nowinandroid.core.common.result.DomainResult
+import com.google.samples.apps.nowinandroid.core.common.result.toDomainError
 import com.google.samples.apps.nowinandroid.core.domain.BulkRemoveBookmarksUseCase
 import com.google.samples.apps.nowinandroid.core.domain.GetBookmarkMementoUseCase
 import com.google.samples.apps.nowinandroid.core.domain.RestoreBookmarksUseCase
@@ -36,8 +38,10 @@ import com.google.samples.apps.nowinandroid.core.ui.BookmarkNoteViewModelState
 import com.google.samples.apps.nowinandroid.core.ui.NewsFeedUiState
 import com.google.samples.apps.nowinandroid.core.ui.NewsFeedUiState.Loading
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
@@ -90,24 +94,45 @@ class BookmarksViewModel @Inject constructor(
                 initialValue = Loading,
             )
 
+    private val _actionResult = MutableStateFlow<ActionResult<Unit>>(ActionResult.Idle)
+    val actionResult: StateFlow<ActionResult<Unit>> = _actionResult.asStateFlow()
+
     fun removeFromSavedResources(newsResourceId: String) {
         viewModelScope.launch {
-            lastRemovedBookmarks = getBookmarkMementoUseCase(setOf(newsResourceId))
-            shouldDisplayUndoBookmark = true
-            updateNewsResourceBookmarkUseCase(newsResourceId, false)
+            _actionResult.value = ActionResult.Loading
+            try {
+                lastRemovedBookmarks = getBookmarkMementoUseCase(setOf(newsResourceId))
+                shouldDisplayUndoBookmark = true
+                updateNewsResourceBookmarkUseCase(newsResourceId, false)
+                _actionResult.value = ActionResult.Success(Unit)
+            } catch (e: Exception) {
+                _actionResult.value = ActionResult.Error(e.toDomainError())
+            }
         }
     }
 
     fun setNewsResourceViewed(newsResourceId: String, viewed: Boolean) {
         viewModelScope.launch {
-            updateNewsResourceViewedUseCase(newsResourceId, viewed)
+            _actionResult.value = ActionResult.Loading
+            try {
+                updateNewsResourceViewedUseCase(newsResourceId, viewed)
+                _actionResult.value = ActionResult.Success(Unit)
+            } catch (e: Exception) {
+                _actionResult.value = ActionResult.Error(e.toDomainError())
+            }
         }
     }
 
     fun undoBookmarkRemoval() {
         viewModelScope.launch {
-            if (lastRemovedBookmarks.isNotEmpty()) {
-                restoreBookmarksUseCase(lastRemovedBookmarks)
+            _actionResult.value = ActionResult.Loading
+            try {
+                if (lastRemovedBookmarks.isNotEmpty()) {
+                    restoreBookmarksUseCase(lastRemovedBookmarks)
+                }
+                _actionResult.value = ActionResult.Success(Unit)
+            } catch (e: Exception) {
+                _actionResult.value = ActionResult.Error(e.toDomainError())
             }
         }
         clearUndoState()
@@ -141,12 +166,22 @@ class BookmarksViewModel @Inject constructor(
 
     fun bulkRemove() {
         viewModelScope.launch {
-            val currentSelected = selectedResourceIds.value
-            lastRemovedBookmarks = getBookmarkMementoUseCase(currentSelected)
-            bulkRemoveBookmarksUseCase(currentSelected.toList())
-            shouldDisplayUndoBookmark = true
-            toggleSelectionMode()
+            _actionResult.value = ActionResult.Loading
+            try {
+                val currentSelected = selectedResourceIds.value
+                lastRemovedBookmarks = getBookmarkMementoUseCase(currentSelected)
+                bulkRemoveBookmarksUseCase(currentSelected.toList())
+                shouldDisplayUndoBookmark = true
+                toggleSelectionMode()
+                _actionResult.value = ActionResult.Success(Unit)
+            } catch (e: Exception) {
+                _actionResult.value = ActionResult.Error(e.toDomainError())
+            }
         }
+    }
+
+    fun consumeActionResult() {
+        _actionResult.value = ActionResult.Idle
     }
 
     fun editNote(newsResourceId: String, currentNote: String) {

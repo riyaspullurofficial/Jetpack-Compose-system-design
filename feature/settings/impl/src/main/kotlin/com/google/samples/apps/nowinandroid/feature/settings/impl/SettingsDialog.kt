@@ -21,6 +21,7 @@ package com.google.samples.apps.nowinandroid.feature.settings.impl
 import android.content.Intent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -41,6 +42,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -55,7 +57,9 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
+import com.google.samples.apps.nowinandroid.core.common.result.ActionResult
 import com.google.samples.apps.nowinandroid.core.designsystem.component.NiaLoadingWheel
+import com.google.samples.apps.nowinandroid.core.designsystem.component.NiaOverlayLoadingWheel
 import com.google.samples.apps.nowinandroid.core.designsystem.component.NiaTextButton
 import com.google.samples.apps.nowinandroid.core.designsystem.theme.NiaTheme
 import com.google.samples.apps.nowinandroid.core.ui.ErrorCompose
@@ -78,25 +82,37 @@ fun SettingsDialog(
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val settingsUiState by viewModel.settingsUiState.collectAsStateWithLifecycle()
+    val actionResult by viewModel.actionResult.collectAsStateWithLifecycle()
+
     SettingsDialog(
         onDismiss = onDismiss,
         settingsUiState = settingsUiState,
+        actionResult = actionResult,
         onChangeThemeBrand = viewModel::updateThemeBrand,
         onChangeDynamicColorPreference = viewModel::updateDynamicColorPreference,
         onChangeDarkThemeConfig = viewModel::updateDarkThemeConfig,
+        onConsumeActionResult = viewModel::consumeActionResult,
     )
 }
 
 @Composable
 fun SettingsDialog(
     settingsUiState: SettingsUiState,
+    actionResult: ActionResult<Unit> = ActionResult.Idle,
     supportDynamicColor: Boolean = supportsDynamicTheming(),
     onDismiss: () -> Unit,
     onChangeThemeBrand: (themeBrand: ThemeBrand) -> Unit,
     onChangeDynamicColorPreference: (useDynamicColor: Boolean) -> Unit,
     onChangeDarkThemeConfig: (darkThemeConfig: DarkThemeConfig) -> Unit,
+    onConsumeActionResult: () -> Unit = {},
 ) {
     val configuration = LocalConfiguration.current
+
+    LaunchedEffect(actionResult) {
+        if (actionResult !is ActionResult.Idle && actionResult !is ActionResult.Loading) {
+            onConsumeActionResult()
+        }
+    }
 
     /**
      * usePlatformDefaultWidth = false is use as a temporary fix to allow
@@ -117,33 +133,42 @@ fun SettingsDialog(
         },
         text = {
             HorizontalDivider()
-            Column(Modifier.verticalScroll(rememberScrollState())) {
-                when (settingsUiState) {
-                    Loading -> {
-                        NiaLoadingWheel(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 16.dp),
-                            contentDesc = stringResource(string.feature_settings_impl_loading),
-                        )
-                    }
+            Box {
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    when (settingsUiState) {
+                        Loading -> {
+                            NiaLoadingWheel(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 16.dp),
+                                contentDesc = stringResource(string.feature_settings_impl_loading),
+                            )
+                        }
 
-                    is Success -> {
-                        SettingsPanel(
-                            settings = settingsUiState.settings,
-                            supportDynamicColor = supportDynamicColor,
-                            onChangeThemeBrand = onChangeThemeBrand,
-                            onChangeDynamicColorPreference = onChangeDynamicColorPreference,
-                            onChangeDarkThemeConfig = onChangeDarkThemeConfig,
-                        )
-                    }
+                        is Success -> {
+                            SettingsPanel(
+                                settings = settingsUiState.settings,
+                                supportDynamicColor = supportDynamicColor,
+                                onChangeThemeBrand = onChangeThemeBrand,
+                                onChangeDynamicColorPreference = onChangeDynamicColorPreference,
+                                onChangeDarkThemeConfig = onChangeDarkThemeConfig,
+                            )
+                        }
 
-                    is SettingsUiState.Error -> {
-                        ErrorCompose(error = settingsUiState.error)
+                        is SettingsUiState.Error -> {
+                            ErrorCompose(error = settingsUiState.error)
+                        }
                     }
+                    HorizontalDivider(Modifier.padding(top = 8.dp))
+                    LinksPanel()
                 }
-                HorizontalDivider(Modifier.padding(top = 8.dp))
-                LinksPanel()
+
+                if (actionResult is ActionResult.Loading) {
+                    NiaOverlayLoadingWheel(
+                        modifier = Modifier.align(Alignment.Center),
+                        contentDesc = "Action in progress",
+                    )
+                }
             }
             TrackScreenViewEvent(screenName = "Settings")
         },

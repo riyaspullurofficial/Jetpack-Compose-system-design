@@ -42,6 +42,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,10 +53,12 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.google.samples.apps.nowinandroid.core.common.result.ActionResult
 import com.google.samples.apps.nowinandroid.core.designsystem.component.DynamicAsyncImage
 import com.google.samples.apps.nowinandroid.core.designsystem.component.NiaBackground
 import com.google.samples.apps.nowinandroid.core.designsystem.component.NiaFilterChip
 import com.google.samples.apps.nowinandroid.core.designsystem.component.NiaLoadingWheel
+import com.google.samples.apps.nowinandroid.core.designsystem.component.NiaOverlayLoadingWheel
 import com.google.samples.apps.nowinandroid.core.designsystem.component.scrollbar.DraggableScrollbar
 import com.google.samples.apps.nowinandroid.core.designsystem.component.scrollbar.rememberDraggableScroller
 import com.google.samples.apps.nowinandroid.core.designsystem.component.scrollbar.scrollbarState
@@ -85,11 +88,13 @@ fun TopicScreen(
     val topicUiState: TopicUiState by viewModel.topicUiState.collectAsStateWithLifecycle()
     val newsUiState: NewsFeedUiState by viewModel.newsUiState.collectAsStateWithLifecycle()
     val noteToEdit by viewModel.noteToEdit.collectAsStateWithLifecycle()
+    val actionResult by viewModel.actionResult.collectAsStateWithLifecycle()
 
     TrackScreenViewEvent(screenName = "Topic: ${viewModel.topicId}")
     TopicScreen(
         topicUiState = topicUiState,
         newsUiState = newsUiState,
+        actionResult = actionResult,
         modifier = modifier.testTag("topic:${viewModel.topicId}"),
         showBackButton = showBackButton,
         onBackClick = onBackClick,
@@ -102,6 +107,7 @@ fun TopicScreen(
         onDeleteNote = viewModel::deleteNote,
         onDismissNoteEdit = viewModel::dismissNoteEdit,
         onNoteClick = viewModel::onEditNote,
+        onConsumeActionResult = viewModel::consumeActionResult,
     )
 }
 
@@ -110,6 +116,7 @@ fun TopicScreen(
 internal fun TopicScreen(
     topicUiState: TopicUiState,
     newsUiState: NewsFeedUiState,
+    actionResult: ActionResult<Unit>,
     showBackButton: Boolean,
     onBackClick: () -> Unit,
     onFollowClick: (Boolean) -> Unit,
@@ -122,9 +129,16 @@ internal fun TopicScreen(
     onDeleteNote: (String) -> Unit = {},
     onDismissNoteEdit: () -> Unit = {},
     onNoteClick: (String, String) -> Unit = { _, _ -> },
+    onConsumeActionResult: () -> Unit = {},
 ) {
     val state = rememberLazyListState()
     TrackScrollJank(scrollableState = state, stateName = "topic:screen")
+
+    LaunchedEffect(actionResult) {
+        if (actionResult !is ActionResult.Idle && actionResult !is ActionResult.Loading) {
+            onConsumeActionResult()
+        }
+    }
 
     BookmarkNoteDialog(
         noteToEdit = noteToEdit,
@@ -184,6 +198,14 @@ internal fun TopicScreen(
         val scrollbarState = state.scrollbarState(
             itemsAvailable = itemsAvailable,
         )
+
+        if (actionResult is ActionResult.Loading) {
+            NiaOverlayLoadingWheel(
+                modifier = Modifier.align(Alignment.Center),
+                contentDesc = "Action in progress",
+            )
+        }
+
         state.DraggableScrollbar(
             modifier = Modifier
                 .fillMaxHeight()
@@ -358,6 +380,7 @@ fun TopicScreenPopulated(
             TopicScreen(
                 topicUiState = TopicUiState.Success(userNewsResources[0].followableTopics[0]),
                 newsUiState = NewsFeedUiState.Success(userNewsResources),
+                actionResult = ActionResult.Idle,
                 showBackButton = true,
                 onBackClick = {},
                 onFollowClick = {},
@@ -378,6 +401,7 @@ fun TopicScreenLoading() {
             TopicScreen(
                 topicUiState = TopicUiState.Loading,
                 newsUiState = NewsFeedUiState.Loading,
+                actionResult = ActionResult.Idle,
                 showBackButton = true,
                 onBackClick = {},
                 onFollowClick = {},

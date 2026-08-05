@@ -19,8 +19,10 @@ package com.google.samples.apps.nowinandroid.feature.topic.impl
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.samples.apps.nowinandroid.core.common.result.ActionResult
 import com.google.samples.apps.nowinandroid.core.common.result.DomainError
 import com.google.samples.apps.nowinandroid.core.common.result.DomainResult
+import com.google.samples.apps.nowinandroid.core.common.result.toDomainError
 import com.google.samples.apps.nowinandroid.core.data.repository.NewsResourceQuery
 import com.google.samples.apps.nowinandroid.core.data.repository.TopicsRepository
 import com.google.samples.apps.nowinandroid.core.data.repository.UserDataRepository
@@ -37,8 +39,10 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -85,9 +89,31 @@ class TopicViewModel @AssistedInject constructor(
             initialValue = NewsFeedUiState.Loading,
         )
 
+    private val _actionResult = MutableStateFlow<ActionResult<Unit>>(ActionResult.Idle)
+    val actionResult: StateFlow<ActionResult<Unit>> = combine(
+        _actionResult,
+        bookmarkNoteViewModelState.actionResult,
+    ) { local, common ->
+        if (local is ActionResult.Loading || common is ActionResult.Loading) ActionResult.Loading
+        else if (local is ActionResult.Error) local
+        else if (common is ActionResult.Error) common
+        else if (local is ActionResult.Success<*> || common is ActionResult.Success<*>) ActionResult.Success(Unit)
+        else ActionResult.Idle
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = ActionResult.Idle,
+    )
+
     fun followTopicToggle(followed: Boolean) {
         viewModelScope.launch {
-            userDataRepository.setTopicIdFollowed(topicId, followed)
+            _actionResult.value = ActionResult.Loading
+            try {
+                userDataRepository.setTopicIdFollowed(topicId, followed)
+                _actionResult.value = ActionResult.Success(Unit)
+            } catch (e: Exception) {
+                _actionResult.value = ActionResult.Error(e.toDomainError())
+            }
         }
     }
 
@@ -115,8 +141,19 @@ class TopicViewModel @AssistedInject constructor(
 
     fun setNewsResourceViewed(newsResourceId: String, viewed: Boolean) {
         viewModelScope.launch {
-            updateNewsResourceViewedUseCase(newsResourceId, viewed)
+            _actionResult.value = ActionResult.Loading
+            try {
+                updateNewsResourceViewedUseCase(newsResourceId, viewed)
+                _actionResult.value = ActionResult.Success(Unit)
+            } catch (e: Exception) {
+                _actionResult.value = ActionResult.Error(e.toDomainError())
+            }
         }
+    }
+
+    fun consumeActionResult() {
+        _actionResult.value = ActionResult.Idle
+        bookmarkNoteViewModelState.consumeActionResult()
     }
 
     @AssistedFactory

@@ -17,6 +17,8 @@
 package com.google.samples.apps.nowinandroid.feature.interests.impl
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -25,8 +27,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.google.samples.apps.nowinandroid.core.common.result.ActionResult
 import com.google.samples.apps.nowinandroid.core.designsystem.component.NiaBackground
 import com.google.samples.apps.nowinandroid.core.designsystem.component.NiaLoadingWheel
+import com.google.samples.apps.nowinandroid.core.designsystem.component.NiaOverlayLoadingWheel
 import com.google.samples.apps.nowinandroid.core.ui.ErrorCompose
 import com.google.samples.apps.nowinandroid.core.designsystem.theme.NiaTheme
 import com.google.samples.apps.nowinandroid.core.model.data.FollowableTopic
@@ -34,6 +38,7 @@ import com.google.samples.apps.nowinandroid.core.ui.DevicePreviews
 import com.google.samples.apps.nowinandroid.core.ui.FollowableTopicPreviewParameterProvider
 import com.google.samples.apps.nowinandroid.core.ui.TrackScreenViewEvent
 import com.google.samples.apps.nowinandroid.feature.interests.api.R
+import androidx.compose.runtime.LaunchedEffect
 
 @Composable
 fun InterestsScreen(
@@ -43,9 +48,11 @@ fun InterestsScreen(
     shouldHighlightSelectedTopic: Boolean = false,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val actionResult by viewModel.actionResult.collectAsStateWithLifecycle()
 
     InterestsScreen(
         uiState = uiState,
+        actionResult = actionResult,
         followTopic = viewModel::followTopic,
         onTopicClick = {
             // TODO: this violates SSOT, events should go through the ViewModel
@@ -54,39 +61,60 @@ fun InterestsScreen(
         },
         shouldHighlightSelectedTopic = shouldHighlightSelectedTopic,
         modifier = modifier,
+        onConsumeActionResult = viewModel::consumeActionResult,
     )
 }
 
 @Composable
 internal fun InterestsScreen(
     uiState: InterestsUiState,
+    actionResult: ActionResult<Unit>,
     followTopic: (String, Boolean) -> Unit,
     onTopicClick: (String) -> Unit,
     modifier: Modifier = Modifier,
     shouldHighlightSelectedTopic: Boolean = false,
+    onConsumeActionResult: () -> Unit = {},
 ) {
+    LaunchedEffect(actionResult) {
+        if (actionResult !is ActionResult.Idle && actionResult !is ActionResult.Loading) {
+            onConsumeActionResult()
+        }
+    }
+
     Box(
         modifier = modifier,
         contentAlignment = Alignment.Center,
     ) {
-        when (uiState) {
-            InterestsUiState.Loading ->
-                NiaLoadingWheel(
-                    contentDesc = stringResource(id = R.string.feature_interests_api_loading),
-                )
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            when (uiState) {
+                InterestsUiState.Loading ->
+                    NiaLoadingWheel(
+                        contentDesc = stringResource(id = R.string.feature_interests_api_loading),
+                    )
 
-            is InterestsUiState.Interests ->
-                TopicsTabContent(
-                    topics = uiState.topics,
-                    onTopicClick = onTopicClick,
-                    onFollowButtonClick = followTopic,
-                    selectedTopicId = uiState.selectedTopicId,
-                    shouldHighlightSelectedTopic = shouldHighlightSelectedTopic,
-                )
+                is InterestsUiState.Interests ->
+                    TopicsTabContent(
+                        topics = uiState.topics,
+                        onTopicClick = onTopicClick,
+                        onFollowButtonClick = followTopic,
+                        selectedTopicId = uiState.selectedTopicId,
+                        shouldHighlightSelectedTopic = shouldHighlightSelectedTopic,
+                    )
 
-            is InterestsUiState.Error -> ErrorCompose(error = uiState.error)
+                is InterestsUiState.Error -> ErrorCompose(error = uiState.error)
 
-            is InterestsUiState.Empty -> InterestsEmptyScreen()
+                is InterestsUiState.Empty -> InterestsEmptyScreen()
+            }
+        }
+
+        if (actionResult is ActionResult.Loading) {
+            NiaOverlayLoadingWheel(
+                modifier = Modifier.align(Alignment.Center),
+                contentDesc = "Action in progress",
+            )
         }
     }
     TrackScreenViewEvent(screenName = "Interests")
@@ -110,6 +138,7 @@ fun InterestsScreenPopulated(
                     selectedTopicId = null,
                     topics = followableTopics,
                 ),
+                actionResult = ActionResult.Idle,
                 followTopic = { _, _ -> },
                 onTopicClick = {},
             )
@@ -124,6 +153,7 @@ fun InterestsScreenLoading() {
         NiaBackground {
             InterestsScreen(
                 uiState = InterestsUiState.Loading,
+                actionResult = ActionResult.Idle,
                 followTopic = { _, _ -> },
                 onTopicClick = {},
             )
@@ -138,6 +168,7 @@ fun InterestsScreenEmpty() {
         NiaBackground {
             InterestsScreen(
                 uiState = InterestsUiState.Empty,
+                actionResult = ActionResult.Idle,
                 followTopic = { _, _ -> },
                 onTopicClick = {},
             )

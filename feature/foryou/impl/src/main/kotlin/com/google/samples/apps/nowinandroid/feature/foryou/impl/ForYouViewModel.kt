@@ -26,7 +26,9 @@ import com.google.samples.apps.nowinandroid.core.data.repository.NewsResourceQue
 import com.google.samples.apps.nowinandroid.core.data.repository.UserDataRepository
 import com.google.samples.apps.nowinandroid.core.data.repository.UserNewsResourceRepository
 import com.google.samples.apps.nowinandroid.core.data.util.SyncManager
+import com.google.samples.apps.nowinandroid.core.common.result.ActionResult
 import com.google.samples.apps.nowinandroid.core.common.result.DomainResult
+import com.google.samples.apps.nowinandroid.core.common.result.toDomainError
 import com.google.samples.apps.nowinandroid.core.domain.GetFollowableTopicsUseCase
 import com.google.samples.apps.nowinandroid.core.domain.UpdateBookmarkNoteUseCase
 import com.google.samples.apps.nowinandroid.core.domain.UpdateNewsResourceBookmarkUseCase
@@ -37,8 +39,10 @@ import com.google.samples.apps.nowinandroid.core.ui.BookmarkNoteViewModelState
 import com.google.samples.apps.nowinandroid.core.ui.NewsFeedUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
@@ -151,11 +155,33 @@ class ForYouViewModel @Inject constructor(
                 initialValue = OnboardingUiState.Loading,
             )
 
+    private val _actionResult = MutableStateFlow<ActionResult<Unit>>(ActionResult.Idle)
+    val actionResult: StateFlow<ActionResult<Unit>> = combine(
+        _actionResult,
+        bookmarkNoteViewModelState.actionResult,
+    ) { local, common ->
+        if (local is ActionResult.Loading || common is ActionResult.Loading) ActionResult.Loading
+        else if (local is ActionResult.Error) local
+        else if (common is ActionResult.Error) common
+        else if (local is ActionResult.Success<*> || common is ActionResult.Success<*>) ActionResult.Success(Unit)
+        else ActionResult.Idle
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = ActionResult.Idle,
+    )
+
     val noteToEdit get() = bookmarkNoteViewModelState.noteToEdit
 
     fun updateTopicSelection(topicId: String, isChecked: Boolean) {
         viewModelScope.launch {
-            userDataRepository.setTopicIdFollowed(topicId, isChecked)
+            _actionResult.value = ActionResult.Loading
+            try {
+                userDataRepository.setTopicIdFollowed(topicId, isChecked)
+                _actionResult.value = ActionResult.Success(Unit)
+            } catch (e: Exception) {
+                _actionResult.value = ActionResult.Error(e.toDomainError())
+            }
         }
     }
 
@@ -200,8 +226,19 @@ class ForYouViewModel @Inject constructor(
 
     fun dismissOnboarding() {
         viewModelScope.launch {
-            userDataRepository.setShouldHideOnboarding(shouldHideOnboarding = true)
+            _actionResult.value = ActionResult.Loading
+            try {
+                userDataRepository.setShouldHideOnboarding(shouldHideOnboarding = true)
+                _actionResult.value = ActionResult.Success(Unit)
+            } catch (e: Exception) {
+                _actionResult.value = ActionResult.Error(e.toDomainError())
+            }
         }
+    }
+
+    fun consumeActionResult() {
+        _actionResult.value = ActionResult.Idle
+        bookmarkNoteViewModelState.consumeActionResult()
     }
 }
 

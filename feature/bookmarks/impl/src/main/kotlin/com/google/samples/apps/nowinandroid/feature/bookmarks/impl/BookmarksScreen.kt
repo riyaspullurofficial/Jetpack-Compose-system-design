@@ -66,7 +66,9 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.google.samples.apps.nowinandroid.core.common.result.ActionResult
 import com.google.samples.apps.nowinandroid.core.designsystem.component.NiaLoadingWheel
+import com.google.samples.apps.nowinandroid.core.designsystem.component.NiaOverlayLoadingWheel
 import com.google.samples.apps.nowinandroid.core.designsystem.component.NiaTopAppBar
 import com.google.samples.apps.nowinandroid.core.designsystem.component.scrollbar.DraggableScrollbar
 import com.google.samples.apps.nowinandroid.core.designsystem.component.scrollbar.rememberDraggableScroller
@@ -98,9 +100,11 @@ internal fun BookmarksScreen(
     val isSelectionMode by viewModel.isSelectionMode.collectAsStateWithLifecycle()
     val selectedResourceIds by viewModel.selectedResourceIds.collectAsStateWithLifecycle()
     val noteToEdit by viewModel.noteToEdit.collectAsStateWithLifecycle()
+    val actionResult by viewModel.actionResult.collectAsStateWithLifecycle()
 
     BookmarksScreen(
         feedState = feedState,
+        actionResult = actionResult,
         onShowSnackbar = onShowSnackbar,
         removeFromBookmarks = viewModel::removeFromSavedResources,
         onNewsResourceViewed = { viewModel.setNewsResourceViewed(it, true) },
@@ -120,6 +124,7 @@ internal fun BookmarksScreen(
         onSaveNote = viewModel::saveNote,
         onDeleteNote = viewModel::deleteNote,
         onDismissNoteEdit = viewModel::dismissNoteEdit,
+        onConsumeActionResult = viewModel::consumeActionResult,
     )
 }
 
@@ -131,6 +136,7 @@ internal fun BookmarksScreen(
 @Composable
 internal fun BookmarksScreen(
     feedState: NewsFeedUiState,
+    actionResult: ActionResult<Unit>,
     onShowSnackbar: suspend (String, String?) -> Boolean,
     removeFromBookmarks: (String) -> Unit,
     onNewsResourceViewed: (String) -> Unit,
@@ -150,6 +156,7 @@ internal fun BookmarksScreen(
     onSaveNote: (String, String) -> Unit = { _, _ -> },
     onDeleteNote: (String) -> Unit = {},
     onDismissNoteEdit: () -> Unit = {},
+    onConsumeActionResult: () -> Unit = {},
 ) {
     val bookmarkRemovedMessage = if (selectedResourceIds.size > 1) {
         stringResource(id = coreUiR.string.core_ui_bulk_remove_undo, selectedResourceIds.size)
@@ -166,6 +173,17 @@ internal fun BookmarksScreen(
             } else {
                 clearUndoState()
             }
+        }
+    }
+
+    LaunchedEffect(actionResult) {
+        if (actionResult is ActionResult.Error) {
+            // Show error snackbar or handled by ErrorCompose if needed
+            // For one-off actions, a snackbar is usually better
+            onShowSnackbar("Action failed", null)
+            onConsumeActionResult()
+        } else if (actionResult is ActionResult.Success) {
+            onConsumeActionResult()
         }
     }
 
@@ -257,6 +275,13 @@ internal fun BookmarksScreen(
                 } else {
                     EmptyState(Modifier.fillMaxSize())
                 }
+            }
+
+            if (actionResult is ActionResult.Loading) {
+                NiaOverlayLoadingWheel(
+                    modifier = Modifier.align(Alignment.Center),
+                    contentDesc = "Action in progress",
+                )
             }
         }
     }

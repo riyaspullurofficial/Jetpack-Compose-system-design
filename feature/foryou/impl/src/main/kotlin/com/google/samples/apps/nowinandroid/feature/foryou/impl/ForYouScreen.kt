@@ -82,6 +82,7 @@ import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.google.samples.apps.nowinandroid.core.common.result.ActionResult
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionStatus.Denied
 import com.google.accompanist.permissions.rememberPermissionState
@@ -117,11 +118,13 @@ fun ForYouScreen(
     val isSyncing by viewModel.isSyncing.collectAsStateWithLifecycle()
     val deepLinkedUserNewsResource by viewModel.deepLinkedNewsResource.collectAsStateWithLifecycle()
     val noteToEdit by viewModel.noteToEdit.collectAsStateWithLifecycle()
+    val actionResult by viewModel.actionResult.collectAsStateWithLifecycle()
 
     ForYouScreen(
         isSyncing = isSyncing,
         onboardingUiState = onboardingUiState,
         feedState = feedState,
+        actionResult = actionResult,
         deepLinkedUserNewsResource = deepLinkedUserNewsResource,
         onTopicCheckedChanged = viewModel::updateTopicSelection,
         onDeepLinkOpened = viewModel::onDeepLinkOpened,
@@ -135,6 +138,7 @@ fun ForYouScreen(
         onDeleteNote = viewModel::deleteNote,
         onDismissNoteEdit = viewModel::dismissNoteEdit,
         onNoteClick = viewModel::onEditNote,
+        onConsumeActionResult = viewModel::consumeActionResult,
     )
 }
 
@@ -143,6 +147,7 @@ internal fun ForYouScreen(
     isSyncing: Boolean,
     onboardingUiState: OnboardingUiState,
     feedState: NewsFeedUiState,
+    actionResult: ActionResult<Unit>,
     deepLinkedUserNewsResource: UserNewsResource?,
     onTopicCheckedChanged: (String, Boolean) -> Unit,
     onTopicClick: (String) -> Unit,
@@ -156,9 +161,16 @@ internal fun ForYouScreen(
     onDeleteNote: (String) -> Unit = {},
     onDismissNoteEdit: () -> Unit = {},
     onNoteClick: (String, String) -> Unit = { _, _ -> },
+    onConsumeActionResult: () -> Unit = {},
 ) {
     val isOnboardingLoading = onboardingUiState is OnboardingUiState.Loading
     val isFeedLoading = feedState is NewsFeedUiState.Loading
+
+    LaunchedEffect(actionResult) {
+        if (actionResult !is ActionResult.Idle && actionResult !is ActionResult.Loading) {
+            onConsumeActionResult()
+        }
+    }
 
     // This code should be called when the UI is ready for use and relates to Time To Full Display.
     ReportDrawnWhen { !isSyncing && !isOnboardingLoading && !isFeedLoading }
@@ -230,7 +242,7 @@ internal fun ForYouScreen(
             }
         }
         AnimatedVisibility(
-            visible = isSyncing || isFeedLoading || isOnboardingLoading,
+            visible = isSyncing || isFeedLoading || isOnboardingLoading || actionResult is ActionResult.Loading,
             enter = slideInVertically(
                 initialOffsetY = { fullHeight -> -fullHeight },
             ) + fadeIn(),
@@ -537,6 +549,7 @@ fun ForYouScreenPopulatedFeed(
             feedState = NewsFeedUiState.Success(
                 feed = userNewsResources,
             ),
+            actionResult = ActionResult.Idle,
             deepLinkedUserNewsResource = null,
             onTopicCheckedChanged = { _, _ -> },
             saveFollowedTopics = {},
@@ -561,6 +574,7 @@ fun ForYouScreenOfflinePopulatedFeed(
             feedState = NewsFeedUiState.Success(
                 feed = userNewsResources,
             ),
+            actionResult = ActionResult.Idle,
             deepLinkedUserNewsResource = null,
             onTopicCheckedChanged = { _, _ -> },
             saveFollowedTopics = {},
@@ -588,6 +602,7 @@ fun ForYouScreenTopicSelection(
             feedState = NewsFeedUiState.Success(
                 feed = userNewsResources,
             ),
+            actionResult = ActionResult.Idle,
             deepLinkedUserNewsResource = null,
             onTopicCheckedChanged = { _, _ -> },
             saveFollowedTopics = {},
@@ -607,6 +622,7 @@ fun ForYouScreenLoading() {
             isSyncing = false,
             onboardingUiState = OnboardingUiState.Loading,
             feedState = NewsFeedUiState.Loading,
+            actionResult = ActionResult.Idle,
             deepLinkedUserNewsResource = null,
             onTopicCheckedChanged = { _, _ -> },
             saveFollowedTopics = {},
@@ -631,6 +647,7 @@ fun ForYouScreenPopulatedAndLoading(
             feedState = NewsFeedUiState.Success(
                 feed = userNewsResources,
             ),
+            actionResult = ActionResult.Idle,
             deepLinkedUserNewsResource = null,
             onTopicCheckedChanged = { _, _ -> },
             saveFollowedTopics = {},

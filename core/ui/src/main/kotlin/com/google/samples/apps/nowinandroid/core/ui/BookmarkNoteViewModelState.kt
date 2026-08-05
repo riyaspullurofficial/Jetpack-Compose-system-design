@@ -17,8 +17,12 @@
 package com.google.samples.apps.nowinandroid.core.ui
 
 import androidx.lifecycle.SavedStateHandle
+import com.google.samples.apps.nowinandroid.core.common.result.ActionResult
+import com.google.samples.apps.nowinandroid.core.common.result.toDomainError
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 /**
@@ -30,6 +34,9 @@ class BookmarkNoteViewModelState(
     private val onDelete: suspend (String) -> Unit,
     private val onToggleBookmark: suspend (String, Boolean) -> Unit,
 ) {
+    private val _actionResult = MutableStateFlow<ActionResult<Unit>>(ActionResult.Idle)
+    val actionResult: StateFlow<ActionResult<Unit>> = _actionResult.asStateFlow()
+
     val noteToEdit: StateFlow<Pair<String, String>?> =
         savedStateHandle.getStateFlow(NOTE_TO_EDIT_KEY, null)
 
@@ -43,9 +50,15 @@ class BookmarkNoteViewModelState(
         isBookmarked: Boolean,
     ) {
         scope.launch {
-            onToggleBookmark(newsResourceId, isBookmarked)
-            if (isBookmarked) {
-                onEditNote(newsResourceId, "")
+            _actionResult.value = ActionResult.Loading
+            try {
+                onToggleBookmark(newsResourceId, isBookmarked)
+                if (isBookmarked) {
+                    onEditNote(newsResourceId, "")
+                }
+                _actionResult.value = ActionResult.Success(Unit)
+            } catch (e: Exception) {
+                _actionResult.value = ActionResult.Error(e.toDomainError())
             }
         }
     }
@@ -56,8 +69,14 @@ class BookmarkNoteViewModelState(
         note: String,
     ) {
         scope.launch {
-            onSave(newsResourceId, note)
-            dismissNoteEdit()
+            _actionResult.value = ActionResult.Loading
+            try {
+                onSave(newsResourceId, note)
+                dismissNoteEdit()
+                _actionResult.value = ActionResult.Success(Unit)
+            } catch (e: Exception) {
+                _actionResult.value = ActionResult.Error(e.toDomainError())
+            }
         }
     }
 
@@ -66,9 +85,19 @@ class BookmarkNoteViewModelState(
         newsResourceId: String,
     ) {
         scope.launch {
-            onDelete(newsResourceId)
-            dismissNoteEdit()
+            _actionResult.value = ActionResult.Loading
+            try {
+                onDelete(newsResourceId)
+                dismissNoteEdit()
+                _actionResult.value = ActionResult.Success(Unit)
+            } catch (e: Exception) {
+                _actionResult.value = ActionResult.Error(e.toDomainError())
+            }
         }
+    }
+
+    fun consumeActionResult() {
+        _actionResult.value = ActionResult.Idle
     }
 
     fun dismissNoteEdit() {
