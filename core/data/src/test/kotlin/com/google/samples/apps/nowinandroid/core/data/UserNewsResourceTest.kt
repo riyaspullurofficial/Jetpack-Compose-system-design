@@ -67,6 +67,7 @@ class UserNewsResourceTest {
 
         val userData = UserData(
             bookmarkedNewsResources = setOf("N1"),
+            bookmarkNotes = emptyMap(),
             viewedNewsResources = setOf("N1"),
             followedTopics = setOf("T1"),
             themeBrand = DEFAULT,

@@ -98,6 +98,7 @@ import com.google.samples.apps.nowinandroid.core.designsystem.theme.NiaTheme
 import com.google.samples.apps.nowinandroid.core.model.data.UserNewsResource
 import com.google.samples.apps.nowinandroid.core.ui.DevicePreviews
 import com.google.samples.apps.nowinandroid.core.ui.NewsFeedUiState
+import com.google.samples.apps.nowinandroid.core.ui.NoteEditDialog
 import com.google.samples.apps.nowinandroid.core.ui.TrackScreenViewEvent
 import com.google.samples.apps.nowinandroid.core.ui.TrackScrollJank
 import com.google.samples.apps.nowinandroid.core.ui.UserNewsResourcePreviewParameterProvider
@@ -128,6 +129,10 @@ fun ForYouScreen(
         onNewsResourcesCheckedChanged = viewModel::updateNewsResourceSaved,
         onNewsResourceViewed = { viewModel.setNewsResourceViewed(it, true) },
         modifier = modifier,
+        noteToEdit = viewModel.noteToEdit,
+        onSaveNote = viewModel::saveNote,
+        onDeleteNote = viewModel::deleteNote,
+        onDismissNoteEdit = viewModel::dismissNoteEdit,
     )
 }
 
@@ -144,12 +149,25 @@ internal fun ForYouScreen(
     onNewsResourcesCheckedChanged: (String, Boolean) -> Unit,
     onNewsResourceViewed: (String) -> Unit,
     modifier: Modifier = Modifier,
+    noteToEdit: Pair<String, String>? = null,
+    onSaveNote: (String, String) -> Unit = { _, _ -> },
+    onDeleteNote: (String) -> Unit = {},
+    onDismissNoteEdit: () -> Unit = {},
 ) {
     val isOnboardingLoading = onboardingUiState is OnboardingUiState.Loading
     val isFeedLoading = feedState is NewsFeedUiState.Loading
 
     // This code should be called when the UI is ready for use and relates to Time To Full Display.
     ReportDrawnWhen { !isSyncing && !isOnboardingLoading && !isFeedLoading }
+
+    noteToEdit?.let { (id, note) ->
+        NoteEditDialog(
+            initialNote = note,
+            onDismiss = onDismissNoteEdit,
+            onSave = { onSaveNote(id, it) },
+            onDelete = { onDeleteNote(id) },
+        )
+    }
 
     val itemsAvailable = feedItemsSize(feedState, onboardingUiState)
 

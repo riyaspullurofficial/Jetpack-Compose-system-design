@@ -34,11 +34,15 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import javax.inject.Inject
 
 @HiltViewModel
@@ -109,6 +113,9 @@ class ForYouViewModel @Inject constructor(
                 initialValue = OnboardingUiState.Loading,
             )
 
+    var noteToEdit by mutableStateOf<Pair<String, String>?>(null)
+        private set
+
     fun updateTopicSelection(topicId: String, isChecked: Boolean) {
         viewModelScope.launch {
             userDataRepository.setTopicIdFollowed(topicId, isChecked)
@@ -118,7 +125,28 @@ class ForYouViewModel @Inject constructor(
     fun updateNewsResourceSaved(newsResourceId: String, isChecked: Boolean) {
         viewModelScope.launch {
             userDataRepository.setNewsResourceBookmarked(newsResourceId, isChecked)
+            if (isChecked) {
+                noteToEdit = newsResourceId to ""
+            }
         }
+    }
+
+    fun saveNote(newsResourceId: String, note: String) {
+        viewModelScope.launch {
+            userDataRepository.setBookmarkNote(newsResourceId, note)
+            dismissNoteEdit()
+        }
+    }
+
+    fun deleteNote(newsResourceId: String) {
+        viewModelScope.launch {
+            userDataRepository.deleteBookmarkNote(newsResourceId)
+            dismissNoteEdit()
+        }
+    }
+
+    fun dismissNoteEdit() {
+        noteToEdit = null
     }
 
     fun setNewsResourceViewed(newsResourceId: String, viewed: Boolean) {

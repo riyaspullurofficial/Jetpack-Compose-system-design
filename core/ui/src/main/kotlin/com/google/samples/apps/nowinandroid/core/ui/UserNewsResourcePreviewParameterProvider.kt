@@ -44,6 +44,7 @@ object PreviewParameterData {
 
     private val userData: UserData = UserData(
         bookmarkedNewsResources = setOf("1", "3"),
+        bookmarkNotes = mapOf("1" to "This is a note"),
         viewedNewsResources = setOf("1", "2", "4"),
         followedTopics = emptySet(),
         themeBrand = ThemeBrand.ANDROID,

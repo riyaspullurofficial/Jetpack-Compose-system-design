@@ -134,4 +134,62 @@ class BookmarksViewModelTest {
         assertIs<Success>(item)
         assertEquals(1, item.feed.size)
     }
+
+    @Test
+    fun selectionMode_toggling_updatesState() = runTest {
+        assertFalse(viewModel.isSelectionMode)
+        viewModel.toggleSelectionMode()
+        assertTrue(viewModel.isSelectionMode)
+        viewModel.toggleSelectionMode()
+        assertFalse(viewModel.isSelectionMode)
+    }
+
+    @Test
+    fun selectionMode_togglingSelection_updatesState() = runTest {
+        viewModel.toggleSelectionMode()
+        viewModel.toggleResourceSelection("1")
+        assertTrue("1" in viewModel.selectedResourceIds)
+        viewModel.toggleResourceSelection("1")
+        assertFalse("1" in viewModel.selectedResourceIds)
+    }
+
+    @Test
+    fun bulkRemove_removesFromFeedAndShowsUndo() = runTest {
+        backgroundScope.launch(UnconfinedTestDispatcher()) { viewModel.feedUiState.collect() }
+        newsRepository.sendNewsResources(newsResourcesTestData)
+        userDataRepository.setNewsResourceBookmarked(newsResourcesTestData[0].id, true)
+        userDataRepository.setNewsResourceBookmarked(newsResourcesTestData[1].id, true)
+
+        viewModel.toggleSelectionMode()
+        viewModel.toggleResourceSelection(newsResourcesTestData[0].id)
+        viewModel.toggleResourceSelection(newsResourcesTestData[1].id)
+        viewModel.bulkRemove()
+
+        val item = viewModel.feedUiState.value
+        assertIs<Success>(item)
+        assertEquals(0, item.feed.size)
+        assertTrue(viewModel.shouldDisplayUndoBookmark)
+        assertFalse(viewModel.isSelectionMode)
+    }
+
+    @Test
+    fun bulkRemove_undoRestoresBookmarksAndNotes() = runTest {
+        backgroundScope.launch(UnconfinedTestDispatcher()) { viewModel.feedUiState.collect() }
+        newsRepository.sendNewsResources(newsResourcesTestData)
+        val id = newsResourcesTestData[0].id
+        val note = "Test note"
+        userDataRepository.setNewsResourceBookmarked(id, true, note)
+
+        viewModel.toggleSelectionMode()
+        viewModel.toggleResourceSelection(id)
+        viewModel.bulkRemove()
+
+        assertEquals(0, (viewModel.feedUiState.value as Success).feed.size)
+
+        viewModel.undoBookmarkRemoval()
+
+        val item = viewModel.feedUiState.value as Success
+        assertEquals(1, item.feed.size)
+        assertEquals(note, item.feed[0].bookmarkNote)
+    }
 }

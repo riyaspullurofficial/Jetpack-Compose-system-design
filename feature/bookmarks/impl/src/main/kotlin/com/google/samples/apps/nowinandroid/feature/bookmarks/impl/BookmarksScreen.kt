@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -39,8 +40,12 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -61,20 +66,24 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.samples.apps.nowinandroid.core.designsystem.component.NiaLoadingWheel
+import com.google.samples.apps.nowinandroid.core.designsystem.component.NiaTopAppBar
 import com.google.samples.apps.nowinandroid.core.designsystem.component.scrollbar.DraggableScrollbar
 import com.google.samples.apps.nowinandroid.core.designsystem.component.scrollbar.rememberDraggableScroller
 import com.google.samples.apps.nowinandroid.core.designsystem.component.scrollbar.scrollbarState
+import com.google.samples.apps.nowinandroid.core.designsystem.icon.NiaIcons
 import com.google.samples.apps.nowinandroid.core.designsystem.theme.LocalTintTheme
 import com.google.samples.apps.nowinandroid.core.designsystem.theme.NiaTheme
 import com.google.samples.apps.nowinandroid.core.model.data.UserNewsResource
 import com.google.samples.apps.nowinandroid.core.ui.NewsFeedUiState
 import com.google.samples.apps.nowinandroid.core.ui.NewsFeedUiState.Loading
 import com.google.samples.apps.nowinandroid.core.ui.NewsFeedUiState.Success
+import com.google.samples.apps.nowinandroid.core.ui.NoteEditDialog
 import com.google.samples.apps.nowinandroid.core.ui.TrackScreenViewEvent
 import com.google.samples.apps.nowinandroid.core.ui.TrackScrollJank
 import com.google.samples.apps.nowinandroid.core.ui.UserNewsResourcePreviewParameterProvider
 import com.google.samples.apps.nowinandroid.core.ui.newsFeed
 import com.google.samples.apps.nowinandroid.feature.bookmarks.api.R
+import com.google.samples.apps.nowinandroid.core.ui.R as coreUiR
 
 @Composable
 internal fun BookmarksScreen(
@@ -94,12 +103,24 @@ internal fun BookmarksScreen(
         shouldDisplayUndoBookmark = viewModel.shouldDisplayUndoBookmark,
         undoBookmarkRemoval = viewModel::undoBookmarkRemoval,
         clearUndoState = viewModel::clearUndoState,
+        isSelectionMode = viewModel.isSelectionMode,
+        selectedResourceIds = viewModel.selectedResourceIds,
+        toggleSelectionMode = viewModel::toggleSelectionMode,
+        toggleResourceSelection = viewModel::toggleResourceSelection,
+        selectAll = viewModel::selectAll,
+        bulkRemove = viewModel::bulkRemove,
+        noteToEdit = viewModel.noteToEdit,
+        onEditNote = viewModel::editNote,
+        onSaveNote = viewModel::saveNote,
+        onDeleteNote = viewModel::deleteNote,
+        onDismissNoteEdit = viewModel::dismissNoteEdit,
     )
 }
 
 /**
  * Displays the user's bookmarked articles. Includes support for loading and empty states.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
 @Composable
 internal fun BookmarksScreen(
@@ -112,8 +133,23 @@ internal fun BookmarksScreen(
     shouldDisplayUndoBookmark: Boolean = false,
     undoBookmarkRemoval: () -> Unit = {},
     clearUndoState: () -> Unit = {},
+    isSelectionMode: Boolean = false,
+    selectedResourceIds: Set<String> = emptySet(),
+    toggleSelectionMode: () -> Unit = {},
+    toggleResourceSelection: (String) -> Unit = {},
+    selectAll: (List<String>) -> Unit = {},
+    bulkRemove: () -> Unit = {},
+    noteToEdit: Pair<String, String>? = null,
+    onEditNote: (String, String) -> Unit = { _, _ -> },
+    onSaveNote: (String, String) -> Unit = { _, _ -> },
+    onDeleteNote: (String) -> Unit = {},
+    onDismissNoteEdit: () -> Unit = {},
 ) {
-    val bookmarkRemovedMessage = stringResource(id = R.string.feature_bookmarks_api_removed)
+    val bookmarkRemovedMessage = if (selectedResourceIds.size > 1) {
+        stringResource(id = coreUiR.string.core_ui_bulk_remove_undo, selectedResourceIds.size)
+    } else {
+        stringResource(id = R.string.feature_bookmarks_api_removed)
+    }
     val undoText = stringResource(id = R.string.feature_bookmarks_api_undo)
 
     LaunchedEffect(shouldDisplayUndoBookmark) {
@@ -131,18 +167,86 @@ internal fun BookmarksScreen(
         clearUndoState()
     }
 
-    when (feedState) {
-        Loading -> LoadingState(modifier)
-        is Success -> if (feedState.feed.isNotEmpty()) {
-            BookmarksGrid(
-                feedState,
-                removeFromBookmarks,
-                onNewsResourceViewed,
-                onTopicClick,
-                modifier,
-            )
-        } else {
-            EmptyState(modifier)
+    noteToEdit?.let { (id, note) ->
+        NoteEditDialog(
+            initialNote = note,
+            onDismiss = onDismissNoteEdit,
+            onSave = { onSaveNote(id, it) },
+            onDelete = { onDeleteNote(id) },
+        )
+    }
+
+    Scaffold(
+        topBar = {
+            if (isSelectionMode) {
+                NiaTopAppBar(
+                    titleRes = android.R.string.untitled,
+                    titleText = stringResource(id = coreUiR.string.core_ui_selected_count, selectedResourceIds.size),
+                    navigationIcon = NiaIcons.Close,
+                    navigationIconContentDescription = stringResource(id = coreUiR.string.core_ui_cancel),
+                    onNavigationClick = toggleSelectionMode,
+                    actionIcon = NiaIcons.Delete,
+                    actionIconContentDescription = stringResource(id = coreUiR.string.core_ui_remove),
+                    onActionClick = bulkRemove,
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    ),
+                )
+            } else if (feedState is Success && feedState.feed.isNotEmpty()) {
+                NiaTopAppBar(
+                    titleRes = R.string.feature_bookmarks_api_title,
+                    actionIcon = NiaIcons.Edit,
+                    actionIconContentDescription = stringResource(id = coreUiR.string.core_ui_edit_note),
+                    onActionClick = toggleSelectionMode,
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color.Transparent,
+                    ),
+                )
+            }
+        },
+        containerColor = Color.Transparent,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
+    ) { padding ->
+        Box(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(padding),
+        ) {
+            when (feedState) {
+                Loading -> LoadingState(Modifier.fillMaxSize())
+                is Success -> if (feedState.feed.isNotEmpty()) {
+                    Column {
+                        if (isSelectionMode) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                                horizontalArrangement = Arrangement.End,
+                            ) {
+                                TextButton(onClick = { selectAll(feedState.feed.map { it.id }) }) {
+                                    Text(stringResource(id = coreUiR.string.core_ui_select_all))
+                                }
+                            }
+                        }
+                        BookmarksGrid(
+                            feedState = feedState,
+                            removeFromBookmarks = removeFromBookmarks,
+                            onNewsResourceViewed = onNewsResourceViewed,
+                            onTopicClick = onTopicClick,
+                            modifier = Modifier.weight(1f),
+                            isSelectionMode = isSelectionMode,
+                            selectedResourceIds = selectedResourceIds,
+                            onToggleResourceSelection = toggleResourceSelection,
+                            onNoteClick = { id ->
+                                val resource = feedState.feed.find { it.id == id }
+                                onEditNote(id, resource?.bookmarkNote.orEmpty())
+                            },
+                        )
+                    }
+                } else {
+                    EmptyState(Modifier.fillMaxSize())
+                }
+            }
         }
     }
 
@@ -167,6 +271,10 @@ private fun BookmarksGrid(
     onNewsResourceViewed: (String) -> Unit,
     onTopicClick: (String) -> Unit,
     modifier: Modifier = Modifier,
+    isSelectionMode: Boolean = false,
+    selectedResourceIds: Set<String> = emptySet(),
+    onToggleResourceSelection: (String) -> Unit = {},
+    onNoteClick: (String) -> Unit = {},
 ) {
     val scrollableState = rememberLazyStaggeredGridState()
     TrackScrollJank(scrollableState = scrollableState, stateName = "bookmarks:grid")
@@ -189,6 +297,10 @@ private fun BookmarksGrid(
                 onNewsResourcesCheckedChanged = { id, _ -> removeFromBookmarks(id) },
                 onNewsResourceViewed = onNewsResourceViewed,
                 onTopicClick = onTopicClick,
+                isSelectionMode = isSelectionMode,
+                selectedResourceIds = selectedResourceIds,
+                onToggleResourceSelection = onToggleResourceSelection,
+                onNoteClick = onNoteClick,
             )
             item(span = StaggeredGridItemSpan.FullLine) {
                 Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.safeDrawing))

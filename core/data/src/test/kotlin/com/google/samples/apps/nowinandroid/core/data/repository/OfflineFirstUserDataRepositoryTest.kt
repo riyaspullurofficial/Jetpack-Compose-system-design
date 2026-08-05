@@ -60,6 +60,7 @@ class OfflineFirstUserDataRepositoryTest {
             assertEquals(
                 UserData(
                     bookmarkedNewsResources = emptySet(),
+                    bookmarkNotes = emptyMap(),
                     viewedNewsResources = emptySet(),
                     followedTopics = emptySet(),
                     themeBrand = ThemeBrand.DEFAULT,

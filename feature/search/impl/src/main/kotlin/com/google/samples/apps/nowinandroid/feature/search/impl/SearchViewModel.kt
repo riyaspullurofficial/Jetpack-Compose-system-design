@@ -16,6 +16,9 @@
 
 package com.google.samples.apps.nowinandroid.feature.search.impl
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -115,10 +118,34 @@ class SearchViewModel @Inject constructor(
         }
     }
 
+    var noteToEdit by mutableStateOf<Pair<String, String>?>(null)
+        private set
+
     fun setNewsResourceBookmarked(newsResourceId: String, isChecked: Boolean) {
         viewModelScope.launch {
             userDataRepository.setNewsResourceBookmarked(newsResourceId, isChecked)
+            if (isChecked) {
+                noteToEdit = newsResourceId to ""
+            }
         }
+    }
+
+    fun saveNote(newsResourceId: String, note: String) {
+        viewModelScope.launch {
+            userDataRepository.setBookmarkNote(newsResourceId, note)
+            dismissNoteEdit()
+        }
+    }
+
+    fun deleteNote(newsResourceId: String) {
+        viewModelScope.launch {
+            userDataRepository.deleteBookmarkNote(newsResourceId)
+            dismissNoteEdit()
+        }
+    }
+
+    fun dismissNoteEdit() {
+        noteToEdit = null
     }
 
     fun followTopic(followedTopicId: String, followed: Boolean) {

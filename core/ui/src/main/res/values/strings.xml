@@ -31,4 +31,16 @@
     <string name="core_ui_interests_card_unfollow_button_content_desc">Unfollow interest</string>
     <string name="core_ui_feed_sharing">Feed sharing</string>
     <string name="core_ui_feed_sharing_data">%1$s: %2$s</string>
+
+    <string name="core_ui_add_note">Add note</string>
+    <string name="core_ui_edit_note">Edit note</string>
+    <string name="core_ui_note_label">Note (max 280 characters)</string>
+    <string name="core_ui_cancel">Cancel</string>
+    <string name="core_ui_save">Save</string>
+    <string name="core_ui_delete">Delete</string>
+    <string name="core_ui_select_all">Select All</string>
+    <string name="core_ui_remove">Remove</string>
+    <string name="core_ui_selected_count">%1$d selected</string>
+    <string name="core_ui_bulk_remove_undo">Removed %1$d bookmarks</string>
+    <string name="core_ui_undo">Undo</string>
 </resources>

@@ -90,6 +90,7 @@ import com.google.samples.apps.nowinandroid.core.model.data.UserNewsResource
 import com.google.samples.apps.nowinandroid.core.ui.DevicePreviews
 import com.google.samples.apps.nowinandroid.core.ui.InterestsItem
 import com.google.samples.apps.nowinandroid.core.ui.NewsFeedUiState.Success
+import com.google.samples.apps.nowinandroid.core.ui.NoteEditDialog
 import com.google.samples.apps.nowinandroid.core.ui.R.string
 import com.google.samples.apps.nowinandroid.core.ui.TrackScreenViewEvent
 import com.google.samples.apps.nowinandroid.core.ui.newsFeed
@@ -120,6 +121,10 @@ internal fun SearchScreen(
         onBackClick = onBackClick,
         onInterestsClick = onInterestsClick,
         onTopicClick = onTopicClick,
+        noteToEdit = searchViewModel.noteToEdit,
+        onSaveNote = searchViewModel::saveNote,
+        onDeleteNote = searchViewModel::deleteNote,
+        onDismissNoteEdit = searchViewModel::dismissNoteEdit,
     )
 }
 
@@ -138,8 +143,22 @@ internal fun SearchScreen(
     onBackClick: () -> Unit = {},
     onInterestsClick: () -> Unit = {},
     onTopicClick: (String) -> Unit = {},
+    noteToEdit: Pair<String, String>? = null,
+    onSaveNote: (String, String) -> Unit = { _, _ -> },
+    onDeleteNote: (String) -> Unit = {},
+    onDismissNoteEdit: () -> Unit = {},
 ) {
     TrackScreenViewEvent(screenName = "Search")
+
+    noteToEdit?.let { (id, note) ->
+        NoteEditDialog(
+            initialNote = note,
+            onDismiss = onDismissNoteEdit,
+            onSave = { onSaveNote(id, it) },
+            onDelete = { onDeleteNote(id) },
+        )
+    }
+
     Column(modifier = modifier) {
         Spacer(Modifier.windowInsetsTopHeight(WindowInsets.safeDrawing))
         SearchToolbar(

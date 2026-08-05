@@ -33,6 +33,7 @@ class NiaPreferencesDataSource @Inject constructor(
         .map {
             UserData(
                 bookmarkedNewsResources = it.bookmarkedNewsResourceIdsMap.keys,
+                bookmarkNotes = it.bookmarkNotesMap,
                 viewedNewsResources = it.viewedNewsResourceIdsMap.keys,
                 followedTopics = it.followedTopicIdsMap.keys,
                 themeBrand = when (it.themeBrand) {
@@ -120,14 +121,82 @@ class NiaPreferencesDataSource @Inject constructor(
         }
     }
 
-    suspend fun setNewsResourceBookmarked(newsResourceId: String, bookmarked: Boolean) {
+    suspend fun setNewsResourceBookmarked(newsResourceId: String, bookmarked: Boolean, note: String? = null) {
         try {
             userPreferences.updateData {
                 it.copy {
                     if (bookmarked) {
                         bookmarkedNewsResourceIds.put(newsResourceId, true)
+                        if (note != null) {
+                            bookmarkNotes.put(newsResourceId, note)
+                        }
                     } else {
                         bookmarkedNewsResourceIds.remove(newsResourceId)
+                        bookmarkNotes.remove(newsResourceId)
+                    }
+                }
+            }
+        } catch (ioException: IOException) {
+            Log.e("NiaPreferences", "Failed to update user preferences", ioException)
+        }
+    }
+
+    suspend fun setBookmarkNote(newsResourceId: String, note: String) {
+        try {
+            userPreferences.updateData {
+                it.copy {
+                    if (bookmarkedNewsResourceIds.containsKey(newsResourceId)) {
+                        bookmarkNotes.put(newsResourceId, note)
+                    }
+                }
+            }
+        } catch (ioException: IOException) {
+            Log.e("NiaPreferences", "Failed to update user preferences", ioException)
+        }
+    }
+
+    suspend fun deleteBookmarkNote(newsResourceId: String) {
+        try {
+            userPreferences.updateData {
+                it.copy {
+                    bookmarkNotes.remove(newsResourceId)
+                }
+            }
+        } catch (ioException: IOException) {
+            Log.e("NiaPreferences", "Failed to update user preferences", ioException)
+        }
+    }
+
+    suspend fun setNewsResourcesBookmarked(newsResourceIds: List<String>, bookmarked: Boolean) {
+        try {
+            userPreferences.updateData {
+                it.copy {
+                    newsResourceIds.forEach { id ->
+                        if (bookmarked) {
+                            bookmarkedNewsResourceIds.put(id, true)
+                        } else {
+                            bookmarkedNewsResourceIds.remove(id)
+                            bookmarkNotes.remove(id)
+                        }
+                    }
+                }
+            }
+        } catch (ioException: IOException) {
+            Log.e("NiaPreferences", "Failed to update user preferences", ioException)
+        }
+    }
+
+    suspend fun restoreBookmarks(bookmarksWithNotes: Map<String, String?>) {
+        try {
+            userPreferences.updateData {
+                it.copy {
+                    bookmarksWithNotes.forEach { (id, note) ->
+                        bookmarkedNewsResourceIds.put(id, true)
+                        if (note != null) {
+                            bookmarkNotes.put(id, note)
+                        } else {
+                            bookmarkNotes.remove(id)
+                        }
                     }
                 }
             }

@@ -50,6 +50,10 @@ fun LazyStaggeredGridScope.newsFeed(
     onNewsResourceViewed: (String) -> Unit,
     onTopicClick: (String) -> Unit,
     onExpandedCardClick: () -> Unit = {},
+    isSelectionMode: Boolean = false,
+    selectedResourceIds: Set<String> = emptySet(),
+    onToggleResourceSelection: (String) -> Unit = {},
+    onNoteClick: (String) -> Unit = {},
 ) {
     when (feedState) {
         NewsFeedUiState.Loading -> Unit
@@ -86,6 +90,10 @@ fun LazyStaggeredGridScope.newsFeed(
                     modifier = Modifier
                         .padding(horizontal = 8.dp)
                         .animateItem(),
+                    isSelectionMode = isSelectionMode,
+                    isSelected = userNewsResource.id in selectedResourceIds,
+                    onToggleSelection = { onToggleResourceSelection(userNewsResource.id) },
+                    onNoteClick = { onNoteClick(userNewsResource.id) },
                 )
             }
         }

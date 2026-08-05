@@ -38,6 +38,9 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 
 @HiltViewModel(assistedFactory = TopicViewModel.Factory::class)
 class TopicViewModel @AssistedInject constructor(
@@ -74,10 +77,34 @@ class TopicViewModel @AssistedInject constructor(
         }
     }
 
+    var noteToEdit by mutableStateOf<Pair<String, String>?>(null)
+        private set
+
     fun bookmarkNews(newsResourceId: String, bookmarked: Boolean) {
         viewModelScope.launch {
             userDataRepository.setNewsResourceBookmarked(newsResourceId, bookmarked)
+            if (bookmarked) {
+                noteToEdit = newsResourceId to ""
+            }
         }
+    }
+
+    fun saveNote(newsResourceId: String, note: String) {
+        viewModelScope.launch {
+            userDataRepository.setBookmarkNote(newsResourceId, note)
+            dismissNoteEdit()
+        }
+    }
+
+    fun deleteNote(newsResourceId: String) {
+        viewModelScope.launch {
+            userDataRepository.deleteBookmarkNote(newsResourceId)
+            dismissNoteEdit()
+        }
+    }
+
+    fun dismissNoteEdit() {
+        noteToEdit = null
     }
 
     fun setNewsResourceViewed(newsResourceId: String, viewed: Boolean) {

@@ -41,7 +41,27 @@ interface UserDataRepository {
     /**
      * Updates the bookmarked status for a news resource
      */
-    suspend fun setNewsResourceBookmarked(newsResourceId: String, bookmarked: Boolean)
+    suspend fun setNewsResourceBookmarked(newsResourceId: String, bookmarked: Boolean, note: String? = null)
+
+    /**
+     * Updates the note for a bookmarked news resource
+     */
+    suspend fun setBookmarkNote(newsResourceId: String, note: String)
+
+    /**
+     * Deletes the note for a bookmarked news resource
+     */
+    suspend fun deleteBookmarkNote(newsResourceId: String)
+
+    /**
+     * Updates the bookmarked status for multiple news resources
+     */
+    suspend fun setNewsResourcesBookmarked(newsResourceIds: List<String>, bookmarked: Boolean)
+
+    /**
+     * Restores bookmarks with their associated notes
+     */
+    suspend fun restoreBookmarks(bookmarksWithNotes: Map<String, String?>)
 
     /**
      * Updates the viewed status for a news resource

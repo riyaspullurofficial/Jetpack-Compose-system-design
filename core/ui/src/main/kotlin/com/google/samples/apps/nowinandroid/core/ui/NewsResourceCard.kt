@@ -38,6 +38,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -95,6 +96,10 @@ fun NewsResourceCardExpanded(
     onClick: () -> Unit,
     onTopicClick: (String) -> Unit,
     modifier: Modifier = Modifier,
+    isSelectionMode: Boolean = false,
+    isSelected: Boolean = false,
+    onToggleSelection: () -> Unit = {},
+    onNoteClick: () -> Unit = {},
 ) {
     val clickActionLabel = stringResource(R.string.core_ui_card_tap_action)
     val sharingLabel = stringResource(R.string.core_ui_feed_sharing)
@@ -111,7 +116,7 @@ fun NewsResourceCardExpanded(
     }
 
     Card(
-        onClick = onClick,
+        onClick = if (isSelectionMode) onToggleSelection else onClick,
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         // Use custom label for accessibility services to communicate button's action to user.
@@ -133,11 +138,18 @@ fun NewsResourceCardExpanded(
             ) {
                 Column {
                     Spacer(modifier = Modifier.height(12.dp))
-                    Row {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        if (isSelectionMode) {
+                            Checkbox(
+                                checked = isSelected,
+                                onCheckedChange = { onToggleSelection() },
+                                modifier = Modifier.padding(end = 8.dp),
+                            )
+                        }
                         NewsResourceTitle(
                             userNewsResource.title,
                             modifier = Modifier
-                                .fillMaxWidth((.8f))
+                                .weight(1f)
                                 .dragAndDropSource { _ ->
                                     DragAndDropTransferData(
                                         ClipData.newPlainText(
@@ -148,9 +160,31 @@ fun NewsResourceCardExpanded(
                                     )
                                 },
                         )
-                        Spacer(modifier = Modifier.weight(1f))
-                        BookmarkButton(isBookmarked, onToggleBookmark)
+                        if (!isSelectionMode) {
+                            BookmarkButton(isBookmarked, onToggleBookmark)
+                        }
                     }
+
+                    if (!isSelectionMode && isBookmarked) {
+                        Surface(
+                            onClick = onNoteClick,
+                            color = Color.Transparent,
+                        ) {
+                            Text(
+                                text = if (userNewsResource.bookmarkNote.isNullOrBlank()) {
+                                    stringResource(R.string.core_ui_add_note)
+                                } else {
+                                    userNewsResource.bookmarkNote.orEmpty()
+                                },
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier
+                                    .padding(vertical = 4.dp)
+                                    .fillMaxWidth(),
+                            )
+                        }
+                    }
+
                     Spacer(modifier = Modifier.height(14.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         if (!hasBeenViewed) {

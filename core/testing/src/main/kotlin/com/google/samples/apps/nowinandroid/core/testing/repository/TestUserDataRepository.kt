@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.filterNotNull
 
 val emptyUserData = UserData(
     bookmarkedNewsResources = emptySet(),
+    bookmarkNotes = emptyMap(),
     viewedNewsResources = emptySet(),
     followedTopics = emptySet(),
     themeBrand = ThemeBrand.DEFAULT,
@@ -61,15 +62,68 @@ class TestUserDataRepository : UserDataRepository {
         }
     }
 
-    override suspend fun setNewsResourceBookmarked(newsResourceId: String, bookmarked: Boolean) {
+    override suspend fun setNewsResourceBookmarked(newsResourceId: String, bookmarked: Boolean, note: String?) {
         currentUserData.let { current ->
             val bookmarkedNews = if (bookmarked) {
                 current.bookmarkedNewsResources + newsResourceId
             } else {
                 current.bookmarkedNewsResources - newsResourceId
             }
+            val bookmarkNotes = if (bookmarked && note != null) {
+                current.bookmarkNotes + (newsResourceId to note)
+            } else if (!bookmarked) {
+                current.bookmarkNotes - newsResourceId
+            } else {
+                current.bookmarkNotes
+            }
 
-            _userData.tryEmit(current.copy(bookmarkedNewsResources = bookmarkedNews))
+            _userData.tryEmit(current.copy(bookmarkedNewsResources = bookmarkedNews, bookmarkNotes = bookmarkNotes))
+        }
+    }
+
+    override suspend fun setBookmarkNote(newsResourceId: String, note: String) {
+        currentUserData.let { current ->
+            if (newsResourceId in current.bookmarkedNewsResources) {
+                _userData.tryEmit(current.copy(bookmarkNotes = current.bookmarkNotes + (newsResourceId to note)))
+            }
+        }
+    }
+
+    override suspend fun deleteBookmarkNote(newsResourceId: String) {
+        currentUserData.let { current ->
+            _userData.tryEmit(current.copy(bookmarkNotes = current.bookmarkNotes - newsResourceId))
+        }
+    }
+
+    override suspend fun setNewsResourcesBookmarked(newsResourceIds: List<String>, bookmarked: Boolean) {
+        currentUserData.let { current ->
+            var bookmarkedNews = current.bookmarkedNewsResources
+            var bookmarkNotes = current.bookmarkNotes
+            newsResourceIds.forEach { id ->
+                if (bookmarked) {
+                    bookmarkedNews = bookmarkedNews + id
+                } else {
+                    bookmarkedNews = bookmarkedNews - id
+                    bookmarkNotes = bookmarkNotes - id
+                }
+            }
+            _userData.tryEmit(current.copy(bookmarkedNewsResources = bookmarkedNews, bookmarkNotes = bookmarkNotes))
+        }
+    }
+
+    override suspend fun restoreBookmarks(bookmarksWithNotes: Map<String, String?>) {
+        currentUserData.let { current ->
+            var bookmarkedNews = current.bookmarkedNewsResources
+            var bookmarkNotes = current.bookmarkNotes
+            bookmarksWithNotes.forEach { (id, note) ->
+                bookmarkedNews = bookmarkedNews + id
+                if (note != null) {
+                    bookmarkNotes = bookmarkNotes + (id to note)
+                } else {
+                    bookmarkNotes = bookmarkNotes - id
+                }
+            }
+            _userData.tryEmit(current.copy(bookmarkedNewsResources = bookmarkedNews, bookmarkNotes = bookmarkNotes))
         }
     }
 

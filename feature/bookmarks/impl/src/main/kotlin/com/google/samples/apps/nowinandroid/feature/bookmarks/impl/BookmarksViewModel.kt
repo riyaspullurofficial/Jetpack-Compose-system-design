@@ -29,6 +29,7 @@ import com.google.samples.apps.nowinandroid.core.ui.NewsFeedUiState.Loading
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
@@ -42,7 +43,16 @@ class BookmarksViewModel @Inject constructor(
 ) : ViewModel() {
 
     var shouldDisplayUndoBookmark by mutableStateOf(false)
-    private var lastRemovedBookmarkId: String? = null
+    private var lastRemovedBookmarks: Map<String, String?> = emptyMap()
+
+    var isSelectionMode by mutableStateOf(false)
+        private set
+
+    var selectedResourceIds by mutableStateOf(setOf<String>())
+        private set
+
+    var noteToEdit by mutableStateOf<Pair<String, String>?>(null)
+        private set
 
     val feedUiState: StateFlow<NewsFeedUiState> =
         userNewsResourceRepository.observeAllBookmarked()
@@ -56,8 +66,10 @@ class BookmarksViewModel @Inject constructor(
 
     fun removeFromSavedResources(newsResourceId: String) {
         viewModelScope.launch {
+            val userData = userDataRepository.userData.firstOrNull()
+            val note = userData?.bookmarkNotes?.get(newsResourceId)
+            lastRemovedBookmarks = mapOf(newsResourceId to note)
             shouldDisplayUndoBookmark = true
-            lastRemovedBookmarkId = newsResourceId
             userDataRepository.setNewsResourceBookmarked(newsResourceId, false)
         }
     }
@@ -70,8 +82,8 @@ class BookmarksViewModel @Inject constructor(
 
     fun undoBookmarkRemoval() {
         viewModelScope.launch {
-            lastRemovedBookmarkId?.let {
-                userDataRepository.setNewsResourceBookmarked(it, true)
+            if (lastRemovedBookmarks.isNotEmpty()) {
+                userDataRepository.restoreBookmarks(lastRemovedBookmarks)
             }
         }
         clearUndoState()
@@ -79,6 +91,59 @@ class BookmarksViewModel @Inject constructor(
 
     fun clearUndoState() {
         shouldDisplayUndoBookmark = false
-        lastRemovedBookmarkId = null
+        lastRemovedBookmarks = emptyMap()
+    }
+
+    fun toggleSelectionMode() {
+        isSelectionMode = !isSelectionMode
+        if (!isSelectionMode) {
+            selectedResourceIds = emptySet()
+        }
+    }
+
+    fun toggleResourceSelection(newsResourceId: String) {
+        selectedResourceIds = if (newsResourceId in selectedResourceIds) {
+            selectedResourceIds - newsResourceId
+        } else {
+            selectedResourceIds + newsResourceId
+        }
+    }
+
+    fun selectAll(ids: List<String>) {
+        selectedResourceIds = ids.toSet()
+    }
+
+    fun bulkRemove() {
+        viewModelScope.launch {
+            val userData = userDataRepository.userData.firstOrNull()
+            lastRemovedBookmarks = selectedResourceIds.associateWith { id ->
+                userData?.bookmarkNotes?.get(id)
+            }
+            userDataRepository.setNewsResourcesBookmarked(selectedResourceIds.toList(), false)
+            shouldDisplayUndoBookmark = true
+            toggleSelectionMode()
+        }
+    }
+
+    fun editNote(newsResourceId: String, currentNote: String) {
+        noteToEdit = newsResourceId to currentNote
+    }
+
+    fun dismissNoteEdit() {
+        noteToEdit = null
+    }
+
+    fun saveNote(newsResourceId: String, note: String) {
+        viewModelScope.launch {
+            userDataRepository.setBookmarkNote(newsResourceId, note)
+            dismissNoteEdit()
+        }
+    }
+
+    fun deleteNote(newsResourceId: String) {
+        viewModelScope.launch {
+            userDataRepository.deleteBookmarkNote(newsResourceId)
+            dismissNoteEdit()
+        }
     }
 }
