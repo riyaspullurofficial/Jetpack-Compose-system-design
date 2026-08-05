@@ -63,8 +63,10 @@ import com.google.samples.apps.nowinandroid.core.designsystem.icon.NiaIcons
 import com.google.samples.apps.nowinandroid.core.designsystem.theme.NiaTheme
 import com.google.samples.apps.nowinandroid.core.model.data.FollowableTopic
 import com.google.samples.apps.nowinandroid.core.model.data.UserNewsResource
-import com.google.samples.apps.nowinandroid.core.ui.DevicePreviews
 import com.google.samples.apps.nowinandroid.core.ui.BookmarkNoteDialog
+import com.google.samples.apps.nowinandroid.core.ui.DevicePreviews
+import com.google.samples.apps.nowinandroid.core.ui.ErrorCompose
+import com.google.samples.apps.nowinandroid.core.ui.NewsFeedUiState
 import com.google.samples.apps.nowinandroid.core.ui.TrackScreenViewEvent
 import com.google.samples.apps.nowinandroid.core.ui.TrackScrollJank
 import com.google.samples.apps.nowinandroid.core.ui.UserNewsResourcePreviewParameterProvider
@@ -81,7 +83,7 @@ fun TopicScreen(
     viewModel: TopicViewModel = hiltViewModel(),
 ) {
     val topicUiState: TopicUiState by viewModel.topicUiState.collectAsStateWithLifecycle()
-    val newsUiState: NewsUiState by viewModel.newsUiState.collectAsStateWithLifecycle()
+    val newsUiState: NewsFeedUiState by viewModel.newsUiState.collectAsStateWithLifecycle()
     val noteToEdit by viewModel.noteToEdit.collectAsStateWithLifecycle()
 
     TrackScreenViewEvent(screenName = "Topic: ${viewModel.topicId}")
@@ -99,6 +101,7 @@ fun TopicScreen(
         onSaveNote = viewModel::saveNote,
         onDeleteNote = viewModel::deleteNote,
         onDismissNoteEdit = viewModel::dismissNoteEdit,
+        onNoteClick = viewModel::onEditNote,
     )
 }
 
@@ -106,7 +109,7 @@ fun TopicScreen(
 @Composable
 internal fun TopicScreen(
     topicUiState: TopicUiState,
-    newsUiState: NewsUiState,
+    newsUiState: NewsFeedUiState,
     showBackButton: Boolean,
     onBackClick: () -> Unit,
     onFollowClick: (Boolean) -> Unit,
@@ -118,6 +121,7 @@ internal fun TopicScreen(
     onSaveNote: (String, String) -> Unit = { _, _ -> },
     onDeleteNote: (String) -> Unit = {},
     onDismissNoteEdit: () -> Unit = {},
+    onNoteClick: (String, String) -> Unit = { _, _ -> },
 ) {
     val state = rememberLazyListState()
     TrackScrollJank(scrollableState = state, stateName = "topic:screen")
@@ -167,6 +171,7 @@ internal fun TopicScreen(
                         onBookmarkChanged = onBookmarkChanged,
                         onNewsResourceViewed = onNewsResourceViewed,
                         onTopicClick = onTopicClick,
+                        onNoteClick = onNoteClick,
                     )
                 }
             }
@@ -195,31 +200,32 @@ internal fun TopicScreen(
 
 private fun topicItemsSize(
     topicUiState: TopicUiState,
-    newsUiState: NewsUiState,
+    newsUiState: NewsFeedUiState,
 ) = when (topicUiState) {
     TopicUiState.Error -> 0 // Nothing
     TopicUiState.Loading -> 1 // Loading bar
     is TopicUiState.Success -> when (newsUiState) {
-        NewsUiState.Error -> 0 // Nothing
-        NewsUiState.Loading -> 1 // Loading bar
-        is NewsUiState.Success -> 2 + newsUiState.news.size // Toolbar, header
+        NewsFeedUiState.Error -> 0 // Nothing
+        NewsFeedUiState.Loading -> 1 // Loading bar
+        is NewsFeedUiState.Success -> 2 + newsUiState.feed.size // Toolbar, header
     }
 }
 
 private fun LazyListScope.topicBody(
     name: String,
     description: String,
-    news: NewsUiState,
+    news: NewsFeedUiState,
     imageUrl: String,
     onBookmarkChanged: (String, Boolean) -> Unit,
     onNewsResourceViewed: (String) -> Unit,
     onTopicClick: (String) -> Unit,
+    onNoteClick: (String, String) -> Unit,
 ) {
     item {
         TopicHeader(name, description, imageUrl)
     }
 
-    userNewsResourceCards(news, onBookmarkChanged, onNewsResourceViewed, onTopicClick)
+    userNewsResourceCards(news, onBookmarkChanged, onNewsResourceViewed, onTopicClick, onNoteClick)
 }
 
 @Composable
@@ -247,28 +253,33 @@ private fun TopicHeader(name: String, description: String, imageUrl: String) {
 }
 
 private fun LazyListScope.userNewsResourceCards(
-    news: NewsUiState,
+    news: NewsFeedUiState,
     onBookmarkChanged: (String, Boolean) -> Unit,
     onNewsResourceViewed: (String) -> Unit,
     onTopicClick: (String) -> Unit,
+    onNoteClick: (String, String) -> Unit,
 ) {
     when (news) {
-        is NewsUiState.Success -> {
+        is NewsFeedUiState.Success -> {
             userNewsResourceCardItems(
-                items = news.news,
+                items = news.feed,
                 onToggleBookmark = { onBookmarkChanged(it.id, !it.isSaved) },
                 onNewsResourceViewed = onNewsResourceViewed,
                 onTopicClick = onTopicClick,
                 itemModifier = Modifier.padding(24.dp),
+                onNoteClick = { id ->
+                    val resource = news.feed.find { it.id == id }
+                    onNoteClick(id, resource?.bookmarkNote.orEmpty())
+                },
             )
         }
 
-        is NewsUiState.Loading -> item {
+        NewsFeedUiState.Loading -> item {
             NiaLoadingWheel(contentDesc = "Loading news")
         }
 
-        else -> item {
-            Text("Error")
+        NewsFeedUiState.Error -> item {
+            ErrorCompose()
         }
     }
 }
@@ -281,11 +292,12 @@ private fun TopicBodyPreview() {
             topicBody(
                 name = "Jetpack Compose",
                 description = "Lorem ipsum maximum",
-                news = NewsUiState.Success(emptyList()),
+                news = NewsFeedUiState.Success(emptyList()),
                 imageUrl = "",
                 onBookmarkChanged = { _, _ -> },
                 onNewsResourceViewed = {},
                 onTopicClick = {},
+                onNoteClick = { _, _ -> },
             )
         }
     }
@@ -344,13 +356,14 @@ fun TopicScreenPopulated(
         NiaBackground {
             TopicScreen(
                 topicUiState = TopicUiState.Success(userNewsResources[0].followableTopics[0]),
-                newsUiState = NewsUiState.Success(userNewsResources),
+                newsUiState = NewsFeedUiState.Success(userNewsResources),
                 showBackButton = true,
                 onBackClick = {},
                 onFollowClick = {},
                 onBookmarkChanged = { _, _ -> },
                 onNewsResourceViewed = {},
                 onTopicClick = {},
+                onNoteClick = { _, _ -> },
             )
         }
     }
@@ -363,13 +376,14 @@ fun TopicScreenLoading() {
         NiaBackground {
             TopicScreen(
                 topicUiState = TopicUiState.Loading,
-                newsUiState = NewsUiState.Loading,
+                newsUiState = NewsFeedUiState.Loading,
                 showBackButton = true,
                 onBackClick = {},
                 onFollowClick = {},
                 onBookmarkChanged = { _, _ -> },
                 onNewsResourceViewed = {},
                 onTopicClick = {},
+                onNoteClick = { _, _ -> },
             )
         }
     }

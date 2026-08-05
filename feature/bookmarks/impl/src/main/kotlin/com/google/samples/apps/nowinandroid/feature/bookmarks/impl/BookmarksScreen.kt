@@ -79,6 +79,7 @@ import com.google.samples.apps.nowinandroid.core.ui.NewsFeedUiState
 import com.google.samples.apps.nowinandroid.core.ui.NewsFeedUiState.Loading
 import com.google.samples.apps.nowinandroid.core.ui.NewsFeedUiState.Success
 import com.google.samples.apps.nowinandroid.core.ui.BookmarkNoteDialog
+import com.google.samples.apps.nowinandroid.core.ui.ErrorCompose
 import com.google.samples.apps.nowinandroid.core.ui.TrackScreenViewEvent
 import com.google.samples.apps.nowinandroid.core.ui.TrackScrollJank
 import com.google.samples.apps.nowinandroid.core.ui.UserNewsResourcePreviewParameterProvider
@@ -223,6 +224,7 @@ internal fun BookmarksScreen(
         ) {
             when (feedState) {
                 Loading -> LoadingState(Modifier.fillMaxSize())
+                NewsFeedUiState.Error -> ErrorCompose(Modifier.fillMaxSize())
                 is Success -> if (feedState.feed.isNotEmpty()) {
                     Column {
                         if (isSelectionMode) {
@@ -268,7 +270,7 @@ private fun LoadingState(modifier: Modifier = Modifier) {
         modifier = modifier
             .fillMaxWidth()
             .wrapContentSize()
-            .testTag("forYou:loading"),
+            .testTag("bookmarks:loading"),
         contentDesc = stringResource(id = R.string.feature_bookmarks_api_loading),
     )
 }
@@ -316,7 +318,7 @@ private fun BookmarksGrid(
             }
         }
         val itemsAvailable = when (feedState) {
-            Loading -> 1
+            Loading, NewsFeedUiState.Error -> 1
             is Success -> feedState.feed.size
         }
         val scrollbarState = scrollableState.scrollbarState(

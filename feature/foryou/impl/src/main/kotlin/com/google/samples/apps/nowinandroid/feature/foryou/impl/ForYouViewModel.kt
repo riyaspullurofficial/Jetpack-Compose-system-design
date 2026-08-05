@@ -30,6 +30,7 @@ import com.google.samples.apps.nowinandroid.core.domain.GetFollowableTopicsUseCa
 import com.google.samples.apps.nowinandroid.core.domain.UpdateBookmarkNoteUseCase
 import com.google.samples.apps.nowinandroid.core.domain.UpdateNewsResourceBookmarkUseCase
 import com.google.samples.apps.nowinandroid.core.domain.UpdateNewsResourceViewedUseCase
+import com.google.samples.apps.nowinandroid.core.model.data.UserNewsResource
 import com.google.samples.apps.nowinandroid.core.notifications.DEEP_LINK_NEWS_RESOURCE_ID_KEY
 import com.google.samples.apps.nowinandroid.core.ui.BookmarkNoteViewModelState
 import com.google.samples.apps.nowinandroid.core.ui.NewsFeedUiState
@@ -37,6 +38,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
@@ -66,6 +68,7 @@ class ForYouViewModel @Inject constructor(
         savedStateHandle = savedStateHandle,
         onSave = updateBookmarkNoteUseCase::saveNote,
         onDelete = updateBookmarkNoteUseCase::deleteNote,
+        onToggleBookmark = updateNewsResourceBookmarkUseCase::invoke,
     )
 
     private val shouldShowOnboarding: Flow<Boolean> =
@@ -102,7 +105,8 @@ class ForYouViewModel @Inject constructor(
 
     val feedState: StateFlow<NewsFeedUiState> =
         userNewsResourceRepository.observeAllForFollowedTopics()
-            .map(NewsFeedUiState::Success)
+            .map<List<UserNewsResource>, NewsFeedUiState>(NewsFeedUiState::Success)
+            .catch { emit(NewsFeedUiState.Error) }
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5_000),
@@ -134,13 +138,12 @@ class ForYouViewModel @Inject constructor(
         }
     }
 
+    fun onEditNote(newsResourceId: String, currentNote: String) {
+        bookmarkNoteViewModelState.onEditNote(newsResourceId, currentNote)
+    }
+
     fun updateNewsResourceSaved(newsResourceId: String, isChecked: Boolean) {
-        viewModelScope.launch {
-            updateNewsResourceBookmarkUseCase(newsResourceId, isChecked)
-            if (isChecked) {
-                bookmarkNoteViewModelState.onEditNote(newsResourceId, "")
-            }
-        }
+        bookmarkNoteViewModelState.onToggleBookmark(viewModelScope, newsResourceId, isChecked)
     }
 
     fun saveNote(newsResourceId: String, note: String) {

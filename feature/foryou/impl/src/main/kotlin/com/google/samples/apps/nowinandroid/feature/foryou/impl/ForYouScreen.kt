@@ -134,6 +134,7 @@ fun ForYouScreen(
         onSaveNote = viewModel::saveNote,
         onDeleteNote = viewModel::deleteNote,
         onDismissNoteEdit = viewModel::dismissNoteEdit,
+        onNoteClick = viewModel::onEditNote,
     )
 }
 
@@ -154,6 +155,7 @@ internal fun ForYouScreen(
     onSaveNote: (String, String) -> Unit = { _, _ -> },
     onDeleteNote: (String) -> Unit = {},
     onDismissNoteEdit: () -> Unit = {},
+    onNoteClick: (String, String) -> Unit = { _, _ -> },
 ) {
     val isOnboardingLoading = onboardingUiState is OnboardingUiState.Loading
     val isFeedLoading = feedState is NewsFeedUiState.Loading
@@ -212,6 +214,12 @@ internal fun ForYouScreen(
                 onNewsResourcesCheckedChanged = onNewsResourcesCheckedChanged,
                 onNewsResourceViewed = onNewsResourceViewed,
                 onTopicClick = onTopicClick,
+                onNoteClick = { id ->
+                    if (feedState is NewsFeedUiState.Success) {
+                        val resource = feedState.feed.find { it.id == id }
+                        onNoteClick(id, resource?.bookmarkNote.orEmpty())
+                    }
+                },
             )
 
             item(span = StaggeredGridItemSpan.FullLine, contentType = "bottomSpacing") {
@@ -502,6 +510,7 @@ private fun feedItemsSize(
 ): Int {
     val feedSize = when (feedState) {
         NewsFeedUiState.Loading -> 0
+        NewsFeedUiState.Error -> 1
         is NewsFeedUiState.Success -> feedState.feed.size
     }
     val onboardingSize = when (onboardingUiState) {

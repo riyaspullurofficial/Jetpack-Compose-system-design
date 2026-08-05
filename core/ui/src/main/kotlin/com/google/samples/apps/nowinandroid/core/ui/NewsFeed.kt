@@ -26,6 +26,7 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridScope
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -57,6 +58,12 @@ fun LazyStaggeredGridScope.newsFeed(
 ) {
     when (feedState) {
         NewsFeedUiState.Loading -> Unit
+        NewsFeedUiState.Error -> {
+            item(span = StaggeredGridItemSpan.FullLine) {
+                ErrorCompose()
+            }
+        }
+
         is NewsFeedUiState.Success -> {
             items(
                 items = feedState.feed,
@@ -105,6 +112,11 @@ sealed interface NewsFeedUiState {
      * The feed is still loading.
      */
     data object Loading : NewsFeedUiState
+
+    /**
+     * The feed loading failed.
+     */
+    data object Error : NewsFeedUiState
 
     /**
      * The feed is loaded with the given list of news resources.

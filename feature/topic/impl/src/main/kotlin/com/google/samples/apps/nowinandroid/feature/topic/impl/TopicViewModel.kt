@@ -30,6 +30,7 @@ import com.google.samples.apps.nowinandroid.core.domain.UpdateNewsResourceViewed
 import com.google.samples.apps.nowinandroid.core.model.data.FollowableTopic
 import com.google.samples.apps.nowinandroid.core.model.data.Topic
 import com.google.samples.apps.nowinandroid.core.model.data.UserNewsResource
+import com.google.samples.apps.nowinandroid.core.ui.NewsFeedUiState
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -60,6 +61,7 @@ class TopicViewModel @AssistedInject constructor(
         savedStateHandle = savedStateHandle,
         onSave = updateBookmarkNoteUseCase::saveNote,
         onDelete = updateBookmarkNoteUseCase::deleteNote,
+        onToggleBookmark = updateNewsResourceBookmarkUseCase::invoke,
     )
 
     val topicUiState: StateFlow<TopicUiState> = topicUiState(
@@ -73,7 +75,7 @@ class TopicViewModel @AssistedInject constructor(
             initialValue = TopicUiState.Loading,
         )
 
-    val newsUiState: StateFlow<NewsUiState> = newsUiState(
+    val newsUiState: StateFlow<NewsFeedUiState> = newsUiState(
         topicId = topicId,
         userDataRepository = userDataRepository,
         userNewsResourceRepository = userNewsResourceRepository,
@@ -81,7 +83,7 @@ class TopicViewModel @AssistedInject constructor(
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = NewsUiState.Loading,
+            initialValue = NewsFeedUiState.Loading,
         )
 
     fun followTopicToggle(followed: Boolean) {
@@ -92,13 +94,12 @@ class TopicViewModel @AssistedInject constructor(
 
     val noteToEdit get() = bookmarkNoteViewModelState.noteToEdit
 
+    fun onEditNote(newsResourceId: String, currentNote: String) {
+        bookmarkNoteViewModelState.onEditNote(newsResourceId, currentNote)
+    }
+
     fun bookmarkNews(newsResourceId: String, bookmarked: Boolean) {
-        viewModelScope.launch {
-            updateNewsResourceBookmarkUseCase(newsResourceId, bookmarked)
-            if (bookmarked) {
-                bookmarkNoteViewModelState.onEditNote(newsResourceId, "")
-            }
-        }
+        bookmarkNoteViewModelState.onToggleBookmark(viewModelScope, newsResourceId, bookmarked)
     }
 
     fun saveNote(newsResourceId: String, note: String) {
@@ -170,7 +171,7 @@ private fun newsUiState(
     topicId: String,
     userNewsResourceRepository: UserNewsResourceRepository,
     userDataRepository: UserDataRepository,
-): Flow<NewsUiState> {
+): Flow<NewsFeedUiState> {
     // Observe news
     val newsStream: Flow<List<UserNewsResource>> = userNewsResourceRepository.observeAll(
         NewsResourceQuery(filterTopicIds = setOf(element = topicId)),
@@ -184,9 +185,9 @@ private fun newsUiState(
         .asResult()
         .map { newsToBookmarksResult ->
             when (newsToBookmarksResult) {
-                is Result.Success -> NewsUiState.Success(newsToBookmarksResult.data.first)
-                is Result.Loading -> NewsUiState.Loading
-                is Result.Error -> NewsUiState.Error
+                is Result.Success -> NewsFeedUiState.Success(newsToBookmarksResult.data.first)
+                is Result.Loading -> NewsFeedUiState.Loading
+                is Result.Error -> NewsFeedUiState.Error
             }
         }
 }
@@ -195,10 +196,4 @@ sealed interface TopicUiState {
     data class Success(val followableTopic: FollowableTopic) : TopicUiState
     data object Error : TopicUiState
     data object Loading : TopicUiState
-}
-
-sealed interface NewsUiState {
-    data class Success(val news: List<UserNewsResource>) : NewsUiState
-    data object Error : NewsUiState
-    data object Loading : NewsUiState
 }

@@ -64,6 +64,7 @@ class SearchViewModel @Inject constructor(
         savedStateHandle = savedStateHandle,
         onSave = updateBookmarkNoteUseCase::saveNote,
         onDelete = updateBookmarkNoteUseCase::deleteNote,
+        onToggleBookmark = updateNewsResourceBookmarkUseCase::invoke,
     )
 
     val searchQuery = savedStateHandle.getStateFlow(key = SEARCH_QUERY, initialValue = "")
@@ -133,13 +134,12 @@ class SearchViewModel @Inject constructor(
 
     val noteToEdit get() = bookmarkNoteViewModelState.noteToEdit
 
+    fun onEditNote(newsResourceId: String, currentNote: String) {
+        bookmarkNoteViewModelState.onEditNote(newsResourceId, currentNote)
+    }
+
     fun setNewsResourceBookmarked(newsResourceId: String, isChecked: Boolean) {
-        viewModelScope.launch {
-            updateNewsResourceBookmarkUseCase(newsResourceId, isChecked)
-            if (isChecked) {
-                bookmarkNoteViewModelState.onEditNote(newsResourceId, "")
-            }
-        }
+        bookmarkNoteViewModelState.onToggleBookmark(viewModelScope, newsResourceId, isChecked)
     }
 
     fun saveNote(newsResourceId: String, note: String) {

@@ -91,6 +91,7 @@ import com.google.samples.apps.nowinandroid.core.ui.DevicePreviews
 import com.google.samples.apps.nowinandroid.core.ui.InterestsItem
 import com.google.samples.apps.nowinandroid.core.ui.NewsFeedUiState.Success
 import com.google.samples.apps.nowinandroid.core.ui.BookmarkNoteDialog
+import com.google.samples.apps.nowinandroid.core.ui.ErrorCompose
 import com.google.samples.apps.nowinandroid.core.ui.R.string
 import com.google.samples.apps.nowinandroid.core.ui.TrackScreenViewEvent
 import com.google.samples.apps.nowinandroid.core.ui.newsFeed
@@ -127,6 +128,7 @@ internal fun SearchScreen(
         onSaveNote = searchViewModel::saveNote,
         onDeleteNote = searchViewModel::deleteNote,
         onDismissNoteEdit = searchViewModel::dismissNoteEdit,
+        onNoteClick = searchViewModel::onEditNote,
     )
 }
 
@@ -149,6 +151,7 @@ internal fun SearchScreen(
     onSaveNote: (String, String) -> Unit = { _, _ -> },
     onDeleteNote: (String) -> Unit = {},
     onDismissNoteEdit: () -> Unit = {},
+    onNoteClick: (String, String) -> Unit = { _, _ -> },
 ) {
     TrackScreenViewEvent(screenName = "Search")
 
@@ -168,10 +171,8 @@ internal fun SearchScreen(
             searchQuery = searchQuery,
         )
         when (searchResultUiState) {
-            SearchResultUiState.Loading,
-            SearchResultUiState.LoadFailed,
-            -> Unit
-
+            SearchResultUiState.Loading -> Unit
+            SearchResultUiState.LoadFailed -> ErrorCompose()
             SearchResultUiState.SearchNotReady -> SearchNotReadyBody()
             SearchResultUiState.EmptyQuery,
             -> {
@@ -213,6 +214,7 @@ internal fun SearchScreen(
                         onNewsResourcesCheckedChanged = onNewsResourcesCheckedChanged,
                         onNewsResourceViewed = onNewsResourceViewed,
                         onFollowButtonClick = onFollowButtonClick,
+                        onNoteClick = onNoteClick,
                     )
                 }
             }
@@ -310,6 +312,7 @@ private fun SearchResultBody(
     onNewsResourcesCheckedChanged: (String, Boolean) -> Unit,
     onNewsResourceViewed: (String) -> Unit,
     onFollowButtonClick: (String, Boolean) -> Unit,
+    onNoteClick: (String, String) -> Unit,
 ) {
     val state = rememberLazyStaggeredGridState()
     Box(
@@ -383,6 +386,10 @@ private fun SearchResultBody(
                     onTopicClick = onTopicClick,
                     onExpandedCardClick = {
                         onSearchTriggered(searchQuery)
+                    },
+                    onNoteClick = { id ->
+                        val resource = newsResources.find { it.id == id }
+                        onNoteClick(id, resource?.bookmarkNote.orEmpty())
                     },
                 )
             }

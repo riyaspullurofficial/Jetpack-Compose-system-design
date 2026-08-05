@@ -28,12 +28,26 @@ class BookmarkNoteViewModelState(
     private val savedStateHandle: SavedStateHandle,
     private val onSave: suspend (String, String) -> Unit,
     private val onDelete: suspend (String) -> Unit,
+    private val onToggleBookmark: suspend (String, Boolean) -> Unit,
 ) {
     val noteToEdit: StateFlow<Pair<String, String>?> =
         savedStateHandle.getStateFlow(NOTE_TO_EDIT_KEY, null)
 
     fun onEditNote(newsResourceId: String, currentNote: String) {
         savedStateHandle[NOTE_TO_EDIT_KEY] = newsResourceId to currentNote
+    }
+
+    fun onToggleBookmark(
+        scope: CoroutineScope,
+        newsResourceId: String,
+        isBookmarked: Boolean,
+    ) {
+        scope.launch {
+            onToggleBookmark(newsResourceId, isBookmarked)
+            if (isBookmarked) {
+                onEditNote(newsResourceId, "")
+            }
+        }
     }
 
     fun onSaveNote(

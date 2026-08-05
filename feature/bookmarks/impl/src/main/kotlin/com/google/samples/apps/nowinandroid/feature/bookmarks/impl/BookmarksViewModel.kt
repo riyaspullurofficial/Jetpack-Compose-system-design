@@ -37,6 +37,7 @@ import com.google.samples.apps.nowinandroid.core.ui.NewsFeedUiState.Loading
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
@@ -60,6 +61,7 @@ class BookmarksViewModel @Inject constructor(
         savedStateHandle = savedStateHandle,
         onSave = updateBookmarkNoteUseCase::saveNote,
         onDelete = updateBookmarkNoteUseCase::deleteNote,
+        onToggleBookmark = updateNewsResourceBookmarkUseCase::invoke,
     )
 
     var shouldDisplayUndoBookmark by mutableStateOf(false)
@@ -75,6 +77,7 @@ class BookmarksViewModel @Inject constructor(
         userNewsResourceRepository.observeAllBookmarked()
             .map<List<UserNewsResource>, NewsFeedUiState>(NewsFeedUiState::Success)
             .onStart { emit(Loading) }
+            .catch { emit(NewsFeedUiState.Error) }
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5_000),

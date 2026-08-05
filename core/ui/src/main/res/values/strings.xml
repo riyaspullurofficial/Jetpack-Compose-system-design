@@ -43,4 +43,5 @@
     <string name="core_ui_selected_count">%1$d selected</string>
     <string name="core_ui_bulk_remove_undo">Removed %1$d bookmarks</string>
     <string name="core_ui_undo">Undo</string>
+    <string name="core_ui_error_loading_feed">Error loading feed</string>
 </resources>
