@@ -39,6 +39,23 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 
 @Composable
+fun BookmarkNoteDialog(
+    noteToEdit: Pair<String, String>?,
+    onDismiss: () -> Unit,
+    onSave: (String, String) -> Unit,
+    onDelete: (String) -> Unit,
+) {
+    noteToEdit?.let { (id, note) ->
+        NoteEditDialog(
+            initialNote = note,
+            onDismiss = onDismiss,
+            onSave = { onSave(id, it) },
+            onDelete = { onDelete(id) },
+        )
+    }
+}
+
+@Composable
 fun NoteEditDialog(
     initialNote: String,
     onDismiss: () -> Unit,

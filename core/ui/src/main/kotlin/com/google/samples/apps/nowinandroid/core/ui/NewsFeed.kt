@@ -63,37 +63,24 @@ fun LazyStaggeredGridScope.newsFeed(
                 key = { it.id },
                 contentType = { "newsFeedItem" },
             ) { userNewsResource ->
-                val context = LocalContext.current
-                val analyticsHelper = LocalAnalyticsHelper.current
-                val backgroundColor = MaterialTheme.colorScheme.background.toArgb()
-
-                NewsResourceCardExpanded(
+                UserNewsResourceCard(
                     userNewsResource = userNewsResource,
-                    isBookmarked = userNewsResource.isSaved,
-                    onClick = {
-                        onExpandedCardClick()
-                        analyticsHelper.logNewsResourceOpened(
-                            newsResourceId = userNewsResource.id,
-                        )
-                        launchCustomChromeTab(context, Uri.parse(userNewsResource.url), backgroundColor)
-
-                        onNewsResourceViewed(userNewsResource.id)
-                    },
-                    hasBeenViewed = userNewsResource.hasBeenViewed,
                     onToggleBookmark = {
                         onNewsResourcesCheckedChanged(
                             userNewsResource.id,
                             !userNewsResource.isSaved,
                         )
                     },
+                    onNewsResourceViewed = onNewsResourceViewed,
                     onTopicClick = onTopicClick,
-                    modifier = Modifier
-                        .padding(horizontal = 8.dp)
-                        .animateItem(),
+                    onExpandedCardClick = onExpandedCardClick,
                     isSelectionMode = isSelectionMode,
                     isSelected = userNewsResource.id in selectedResourceIds,
                     onToggleSelection = { onToggleResourceSelection(userNewsResource.id) },
-                    onNoteClick = { onNoteClick(userNewsResource.id) },
+                    onNoteClick = onNoteClick,
+                    modifier = Modifier
+                        .padding(horizontal = 8.dp)
+                        .animateItem(),
                 )
             }
         }

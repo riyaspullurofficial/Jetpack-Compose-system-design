@@ -29,6 +29,7 @@ import com.google.samples.apps.nowinandroid.core.domain.RestoreBookmarksUseCase
 import com.google.samples.apps.nowinandroid.core.domain.UpdateBookmarkNoteUseCase
 import com.google.samples.apps.nowinandroid.core.domain.UpdateNewsResourceBookmarkUseCase
 import com.google.samples.apps.nowinandroid.core.model.data.UserNewsResource
+import com.google.samples.apps.nowinandroid.core.ui.BookmarkNoteViewModelState
 import com.google.samples.apps.nowinandroid.core.ui.NewsFeedUiState
 import com.google.samples.apps.nowinandroid.core.ui.NewsFeedUiState.Loading
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -49,30 +50,19 @@ class BookmarksViewModel @Inject constructor(
     private val updateNewsResourceBookmarkUseCase: UpdateNewsResourceBookmarkUseCase,
     private val bulkRemoveBookmarksUseCase: BulkRemoveBookmarksUseCase,
     private val restoreBookmarksUseCase: RestoreBookmarksUseCase,
-    private val updateBookmarkNoteUseCase: UpdateBookmarkNoteUseCase,
+    updateBookmarkNoteUseCase: UpdateBookmarkNoteUseCase,
 ) : ViewModel() {
+
+    private val bookmarkNoteViewModelState = BookmarkNoteViewModelState(savedStateHandle, updateBookmarkNoteUseCase)
 
     var shouldDisplayUndoBookmark by mutableStateOf(false)
     private var lastRemovedBookmarks: Map<String, String?> = emptyMap()
 
-    var isSelectionMode: Boolean
-        get() = savedStateHandle.get<Boolean>(IS_SELECTION_MODE_KEY) ?: false
-        private set(value) = savedStateHandle.set(IS_SELECTION_MODE_KEY, value)
+    val isSelectionMode: StateFlow<Boolean> = savedStateHandle.getStateFlow(IS_SELECTION_MODE_KEY, false)
 
-    var selectedResourceIds: Set<String>
-        get() = savedStateHandle.get<List<String>>(SELECTED_RESOURCE_IDS_KEY)?.toSet() ?: emptySet()
-        private set(value) = savedStateHandle.set(SELECTED_RESOURCE_IDS_KEY, value.toList())
+    val selectedResourceIds: StateFlow<Set<String>> = savedStateHandle.getStateFlow(SELECTED_RESOURCE_IDS_KEY, emptySet())
 
-    var noteToEdit: Pair<String, String>?
-        get() {
-            val id = savedStateHandle.get<String>(NOTE_TO_EDIT_ID_KEY)
-            val note = savedStateHandle.get<String>(NOTE_TO_EDIT_NOTE_KEY)
-            return if (id != null && note != null) id to note else null
-        }
-        private set(value) {
-            savedStateHandle.set(NOTE_TO_EDIT_ID_KEY, value?.first)
-            savedStateHandle.set(NOTE_TO_EDIT_NOTE_KEY, value?.second)
-        }
+    val noteToEdit = bookmarkNoteViewModelState.noteToEdit
 
     val feedUiState: StateFlow<NewsFeedUiState> =
         userNewsResourceRepository.observeAllBookmarked()
@@ -115,60 +105,55 @@ class BookmarksViewModel @Inject constructor(
     }
 
     fun toggleSelectionMode() {
-        isSelectionMode = !isSelectionMode
-        if (!isSelectionMode) {
-            selectedResourceIds = emptySet()
+        val currentMode = isSelectionMode.value
+        savedStateHandle[IS_SELECTION_MODE_KEY] = !currentMode
+        if (currentMode) {
+            savedStateHandle[SELECTED_RESOURCE_IDS_KEY] = emptySet<String>()
         }
     }
 
     fun toggleResourceSelection(newsResourceId: String) {
-        selectedResourceIds = if (newsResourceId in selectedResourceIds) {
-            selectedResourceIds - newsResourceId
+        val currentIds = selectedResourceIds.value
+        savedStateHandle[SELECTED_RESOURCE_IDS_KEY] = if (newsResourceId in currentIds) {
+            currentIds - newsResourceId
         } else {
-            selectedResourceIds + newsResourceId
+            currentIds + newsResourceId
         }
     }
 
     fun selectAll(ids: List<String>) {
-        selectedResourceIds = ids.toSet()
+        savedStateHandle[SELECTED_RESOURCE_IDS_KEY] = ids.toSet()
     }
 
     fun bulkRemove() {
         viewModelScope.launch {
             val userData = userDataRepository.userData.firstOrNull()
-            lastRemovedBookmarks = selectedResourceIds.associateWith { id ->
+            val currentSelected = selectedResourceIds.value
+            lastRemovedBookmarks = currentSelected.associateWith { id ->
                 userData?.bookmarkNotes?.get(id)
             }
-            bulkRemoveBookmarksUseCase(selectedResourceIds.toList())
+            bulkRemoveBookmarksUseCase(currentSelected.toList())
             shouldDisplayUndoBookmark = true
             toggleSelectionMode()
         }
     }
 
     fun editNote(newsResourceId: String, currentNote: String) {
-        noteToEdit = newsResourceId to currentNote
+        bookmarkNoteViewModelState.onEditNote(newsResourceId, currentNote)
     }
 
     fun dismissNoteEdit() {
-        noteToEdit = null
+        bookmarkNoteViewModelState.dismissNoteEdit()
     }
 
     fun saveNote(newsResourceId: String, note: String) {
-        viewModelScope.launch {
-            updateBookmarkNoteUseCase.saveNote(newsResourceId, note)
-            dismissNoteEdit()
-        }
+        bookmarkNoteViewModelState.onSaveNote(viewModelScope, newsResourceId, note)
     }
 
     fun deleteNote(newsResourceId: String) {
-        viewModelScope.launch {
-            updateBookmarkNoteUseCase.deleteNote(newsResourceId)
-            dismissNoteEdit()
-        }
+        bookmarkNoteViewModelState.onDeleteNote(viewModelScope, newsResourceId)
     }
 }
 
 private const val IS_SELECTION_MODE_KEY = "isSelectionMode"
 private const val SELECTED_RESOURCE_IDS_KEY = "selectedResourceIds"
-private const val NOTE_TO_EDIT_ID_KEY = "noteToEditId"
-private const val NOTE_TO_EDIT_NOTE_KEY = "noteToEditNote"

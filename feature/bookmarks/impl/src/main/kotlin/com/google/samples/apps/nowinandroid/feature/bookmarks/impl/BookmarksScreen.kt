@@ -78,7 +78,7 @@ import com.google.samples.apps.nowinandroid.core.model.data.UserNewsResource
 import com.google.samples.apps.nowinandroid.core.ui.NewsFeedUiState
 import com.google.samples.apps.nowinandroid.core.ui.NewsFeedUiState.Loading
 import com.google.samples.apps.nowinandroid.core.ui.NewsFeedUiState.Success
-import com.google.samples.apps.nowinandroid.core.ui.NoteEditDialog
+import com.google.samples.apps.nowinandroid.core.ui.BookmarkNoteDialog
 import com.google.samples.apps.nowinandroid.core.ui.TrackScreenViewEvent
 import com.google.samples.apps.nowinandroid.core.ui.TrackScrollJank
 import com.google.samples.apps.nowinandroid.core.ui.UserNewsResourcePreviewParameterProvider
@@ -94,6 +94,10 @@ internal fun BookmarksScreen(
     viewModel: BookmarksViewModel = hiltViewModel(),
 ) {
     val feedState by viewModel.feedUiState.collectAsStateWithLifecycle()
+    val isSelectionMode by viewModel.isSelectionMode.collectAsStateWithLifecycle()
+    val selectedResourceIds by viewModel.selectedResourceIds.collectAsStateWithLifecycle()
+    val noteToEdit by viewModel.noteToEdit.collectAsStateWithLifecycle()
+
     BookmarksScreen(
         feedState = feedState,
         onShowSnackbar = onShowSnackbar,
@@ -104,13 +108,13 @@ internal fun BookmarksScreen(
         shouldDisplayUndoBookmark = viewModel.shouldDisplayUndoBookmark,
         undoBookmarkRemoval = viewModel::undoBookmarkRemoval,
         clearUndoState = viewModel::clearUndoState,
-        isSelectionMode = viewModel.isSelectionMode,
-        selectedResourceIds = viewModel.selectedResourceIds,
+        isSelectionMode = isSelectionMode,
+        selectedResourceIds = selectedResourceIds,
         toggleSelectionMode = viewModel::toggleSelectionMode,
         toggleResourceSelection = viewModel::toggleResourceSelection,
         selectAll = viewModel::selectAll,
         bulkRemove = viewModel::bulkRemove,
-        noteToEdit = viewModel.noteToEdit,
+        noteToEdit = noteToEdit,
         onEditNote = viewModel::editNote,
         onSaveNote = viewModel::saveNote,
         onDeleteNote = viewModel::deleteNote,
@@ -151,7 +155,7 @@ internal fun BookmarksScreen(
     } else {
         stringResource(id = R.string.feature_bookmarks_api_removed)
     }
-    val undoText = stringResource(id = R.string.feature_bookmarks_api_undo)
+    val undoText = stringResource(id = coreUiR.string.core_ui_undo)
 
     LaunchedEffect(shouldDisplayUndoBookmark) {
         if (shouldDisplayUndoBookmark) {
@@ -174,14 +178,12 @@ internal fun BookmarksScreen(
         }
     }
 
-    noteToEdit?.let { (id, note) ->
-        NoteEditDialog(
-            initialNote = note,
-            onDismiss = onDismissNoteEdit,
-            onSave = { onSaveNote(id, it) },
-            onDelete = { onDeleteNote(id) },
-        )
-    }
+    BookmarkNoteDialog(
+        noteToEdit = noteToEdit,
+        onDismiss = onDismissNoteEdit,
+        onSave = onSaveNote,
+        onDelete = onDeleteNote,
+    )
 
     Scaffold(
         topBar = {

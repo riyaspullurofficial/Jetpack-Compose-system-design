@@ -16,14 +16,9 @@
 
 package com.google.samples.apps.nowinandroid.core.ui
 
-import android.net.Uri
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalContext
-import com.google.samples.apps.nowinandroid.core.analytics.LocalAnalyticsHelper
 import com.google.samples.apps.nowinandroid.core.model.data.UserNewsResource
 
 /**
@@ -44,26 +39,13 @@ fun LazyListScope.userNewsResourceCardItems(
     items = items,
     key = { it.id },
     itemContent = { userNewsResource ->
-        val resourceUrl = Uri.parse(userNewsResource.url)
-        val backgroundColor = MaterialTheme.colorScheme.background.toArgb()
-        val context = LocalContext.current
-        val analyticsHelper = LocalAnalyticsHelper.current
-
-        NewsResourceCardExpanded(
+        UserNewsResourceCard(
             userNewsResource = userNewsResource,
-            isBookmarked = userNewsResource.isSaved,
-            hasBeenViewed = userNewsResource.hasBeenViewed,
             onToggleBookmark = { onToggleBookmark(userNewsResource) },
-            onClick = {
-                analyticsHelper.logNewsResourceOpened(
-                    newsResourceId = userNewsResource.id,
-                )
-                launchCustomChromeTab(context, resourceUrl, backgroundColor)
-                onNewsResourceViewed(userNewsResource.id)
-            },
+            onNewsResourceViewed = onNewsResourceViewed,
             onTopicClick = onTopicClick,
             modifier = itemModifier,
-            onNoteClick = { onNoteClick(userNewsResource.id) },
+            onNoteClick = onNoteClick,
         )
     },
 )

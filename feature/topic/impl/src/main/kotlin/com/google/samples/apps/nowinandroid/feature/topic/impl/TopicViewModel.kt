@@ -41,17 +41,21 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import androidx.lifecycle.SavedStateHandle
+import com.google.samples.apps.nowinandroid.core.ui.BookmarkNoteViewModelState
 
 @HiltViewModel(assistedFactory = TopicViewModel.Factory::class)
 class TopicViewModel @AssistedInject constructor(
-    private val savedStateHandle: SavedStateHandle,
+    savedStateHandle: SavedStateHandle,
     private val userDataRepository: UserDataRepository,
     topicsRepository: TopicsRepository,
     userNewsResourceRepository: UserNewsResourceRepository,
     private val updateNewsResourceBookmarkUseCase: UpdateNewsResourceBookmarkUseCase,
-    private val updateBookmarkNoteUseCase: UpdateBookmarkNoteUseCase,
+    updateBookmarkNoteUseCase: UpdateBookmarkNoteUseCase,
     @Assisted val topicId: String,
 ) : ViewModel() {
+
+    private val bookmarkNoteViewModelState = BookmarkNoteViewModelState(savedStateHandle, updateBookmarkNoteUseCase)
+
     val topicUiState: StateFlow<TopicUiState> = topicUiState(
         topicId = topicId,
         userDataRepository = userDataRepository,
@@ -80,42 +84,27 @@ class TopicViewModel @AssistedInject constructor(
         }
     }
 
-    var noteToEdit: Pair<String, String>?
-        get() {
-            val id = savedStateHandle.get<String>(NOTE_TO_EDIT_ID_KEY)
-            val note = savedStateHandle.get<String>(NOTE_TO_EDIT_NOTE_KEY)
-            return if (id != null && note != null) id to note else null
-        }
-        private set(value) {
-            savedStateHandle.set(NOTE_TO_EDIT_ID_KEY, value?.first)
-            savedStateHandle.set(NOTE_TO_EDIT_NOTE_KEY, value?.second)
-        }
+    val noteToEdit get() = bookmarkNoteViewModelState.noteToEdit
 
     fun bookmarkNews(newsResourceId: String, bookmarked: Boolean) {
         viewModelScope.launch {
             updateNewsResourceBookmarkUseCase(newsResourceId, bookmarked)
             if (bookmarked) {
-                noteToEdit = newsResourceId to ""
+                bookmarkNoteViewModelState.onEditNote(newsResourceId, "")
             }
         }
     }
 
     fun saveNote(newsResourceId: String, note: String) {
-        viewModelScope.launch {
-            updateBookmarkNoteUseCase.saveNote(newsResourceId, note)
-            dismissNoteEdit()
-        }
+        bookmarkNoteViewModelState.onSaveNote(viewModelScope, newsResourceId, note)
     }
 
     fun deleteNote(newsResourceId: String) {
-        viewModelScope.launch {
-            updateBookmarkNoteUseCase.deleteNote(newsResourceId)
-            dismissNoteEdit()
-        }
+        bookmarkNoteViewModelState.onDeleteNote(viewModelScope, newsResourceId)
     }
 
     fun dismissNoteEdit() {
-        noteToEdit = null
+        bookmarkNoteViewModelState.dismissNoteEdit()
     }
 
     fun setNewsResourceViewed(newsResourceId: String, viewed: Boolean) {
@@ -131,9 +120,6 @@ class TopicViewModel @AssistedInject constructor(
         ): TopicViewModel
     }
 }
-
-private const val NOTE_TO_EDIT_ID_KEY = "noteToEditId"
-private const val NOTE_TO_EDIT_NOTE_KEY = "noteToEditNote"
 
 private fun topicUiState(
     topicId: String,

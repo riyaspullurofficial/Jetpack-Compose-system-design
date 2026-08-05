@@ -64,7 +64,7 @@ import com.google.samples.apps.nowinandroid.core.designsystem.theme.NiaTheme
 import com.google.samples.apps.nowinandroid.core.model.data.FollowableTopic
 import com.google.samples.apps.nowinandroid.core.model.data.UserNewsResource
 import com.google.samples.apps.nowinandroid.core.ui.DevicePreviews
-import com.google.samples.apps.nowinandroid.core.ui.NoteEditDialog
+import com.google.samples.apps.nowinandroid.core.ui.BookmarkNoteDialog
 import com.google.samples.apps.nowinandroid.core.ui.TrackScreenViewEvent
 import com.google.samples.apps.nowinandroid.core.ui.TrackScrollJank
 import com.google.samples.apps.nowinandroid.core.ui.UserNewsResourcePreviewParameterProvider
@@ -82,6 +82,7 @@ fun TopicScreen(
 ) {
     val topicUiState: TopicUiState by viewModel.topicUiState.collectAsStateWithLifecycle()
     val newsUiState: NewsUiState by viewModel.newsUiState.collectAsStateWithLifecycle()
+    val noteToEdit by viewModel.noteToEdit.collectAsStateWithLifecycle()
 
     TrackScreenViewEvent(screenName = "Topic: ${viewModel.topicId}")
     TopicScreen(
@@ -94,7 +95,7 @@ fun TopicScreen(
         onBookmarkChanged = viewModel::bookmarkNews,
         onNewsResourceViewed = { viewModel.setNewsResourceViewed(it, true) },
         onTopicClick = onTopicClick,
-        noteToEdit = viewModel.noteToEdit,
+        noteToEdit = noteToEdit,
         onSaveNote = viewModel::saveNote,
         onDeleteNote = viewModel::deleteNote,
         onDismissNoteEdit = viewModel::dismissNoteEdit,
@@ -121,14 +122,12 @@ internal fun TopicScreen(
     val state = rememberLazyListState()
     TrackScrollJank(scrollableState = state, stateName = "topic:screen")
 
-    noteToEdit?.let { (id, note) ->
-        NoteEditDialog(
-            initialNote = note,
-            onDismiss = onDismissNoteEdit,
-            onSave = { onSaveNote(id, it) },
-            onDelete = { onDeleteNote(id) },
-        )
-    }
+    BookmarkNoteDialog(
+        noteToEdit = noteToEdit,
+        onDismiss = onDismissNoteEdit,
+        onSave = onSaveNote,
+        onDelete = onDeleteNote,
+    )
 
     Box(
         modifier = modifier,

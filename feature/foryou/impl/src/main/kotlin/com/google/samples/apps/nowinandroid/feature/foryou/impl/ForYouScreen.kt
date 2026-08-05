@@ -98,7 +98,7 @@ import com.google.samples.apps.nowinandroid.core.designsystem.theme.NiaTheme
 import com.google.samples.apps.nowinandroid.core.model.data.UserNewsResource
 import com.google.samples.apps.nowinandroid.core.ui.DevicePreviews
 import com.google.samples.apps.nowinandroid.core.ui.NewsFeedUiState
-import com.google.samples.apps.nowinandroid.core.ui.NoteEditDialog
+import com.google.samples.apps.nowinandroid.core.ui.BookmarkNoteDialog
 import com.google.samples.apps.nowinandroid.core.ui.TrackScreenViewEvent
 import com.google.samples.apps.nowinandroid.core.ui.TrackScrollJank
 import com.google.samples.apps.nowinandroid.core.ui.UserNewsResourcePreviewParameterProvider
@@ -116,6 +116,7 @@ fun ForYouScreen(
     val feedState by viewModel.feedState.collectAsStateWithLifecycle()
     val isSyncing by viewModel.isSyncing.collectAsStateWithLifecycle()
     val deepLinkedUserNewsResource by viewModel.deepLinkedNewsResource.collectAsStateWithLifecycle()
+    val noteToEdit by viewModel.noteToEdit.collectAsStateWithLifecycle()
 
     ForYouScreen(
         isSyncing = isSyncing,
@@ -129,7 +130,7 @@ fun ForYouScreen(
         onNewsResourcesCheckedChanged = viewModel::updateNewsResourceSaved,
         onNewsResourceViewed = { viewModel.setNewsResourceViewed(it, true) },
         modifier = modifier,
-        noteToEdit = viewModel.noteToEdit,
+        noteToEdit = noteToEdit,
         onSaveNote = viewModel::saveNote,
         onDeleteNote = viewModel::deleteNote,
         onDismissNoteEdit = viewModel::dismissNoteEdit,
@@ -160,14 +161,12 @@ internal fun ForYouScreen(
     // This code should be called when the UI is ready for use and relates to Time To Full Display.
     ReportDrawnWhen { !isSyncing && !isOnboardingLoading && !isFeedLoading }
 
-    noteToEdit?.let { (id, note) ->
-        NoteEditDialog(
-            initialNote = note,
-            onDismiss = onDismissNoteEdit,
-            onSave = { onSaveNote(id, it) },
-            onDelete = { onDeleteNote(id) },
-        )
-    }
+    BookmarkNoteDialog(
+        noteToEdit = noteToEdit,
+        onDismiss = onDismissNoteEdit,
+        onSave = onSaveNote,
+        onDelete = onDeleteNote,
+    )
 
     val itemsAvailable = feedItemsSize(feedState, onboardingUiState)
 
