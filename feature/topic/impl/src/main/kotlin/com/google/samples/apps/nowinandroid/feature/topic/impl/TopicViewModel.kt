@@ -26,6 +26,7 @@ import com.google.samples.apps.nowinandroid.core.data.repository.UserDataReposit
 import com.google.samples.apps.nowinandroid.core.data.repository.UserNewsResourceRepository
 import com.google.samples.apps.nowinandroid.core.domain.UpdateBookmarkNoteUseCase
 import com.google.samples.apps.nowinandroid.core.domain.UpdateNewsResourceBookmarkUseCase
+import com.google.samples.apps.nowinandroid.core.domain.UpdateNewsResourceViewedUseCase
 import com.google.samples.apps.nowinandroid.core.model.data.FollowableTopic
 import com.google.samples.apps.nowinandroid.core.model.data.Topic
 import com.google.samples.apps.nowinandroid.core.model.data.UserNewsResource
@@ -50,11 +51,16 @@ class TopicViewModel @AssistedInject constructor(
     topicsRepository: TopicsRepository,
     userNewsResourceRepository: UserNewsResourceRepository,
     private val updateNewsResourceBookmarkUseCase: UpdateNewsResourceBookmarkUseCase,
-    updateBookmarkNoteUseCase: UpdateBookmarkNoteUseCase,
+    private val updateNewsResourceViewedUseCase: UpdateNewsResourceViewedUseCase,
+    private val updateBookmarkNoteUseCase: UpdateBookmarkNoteUseCase,
     @Assisted val topicId: String,
 ) : ViewModel() {
 
-    private val bookmarkNoteViewModelState = BookmarkNoteViewModelState(savedStateHandle, updateBookmarkNoteUseCase)
+    private val bookmarkNoteViewModelState = BookmarkNoteViewModelState(
+        savedStateHandle = savedStateHandle,
+        onSave = updateBookmarkNoteUseCase::saveNote,
+        onDelete = updateBookmarkNoteUseCase::deleteNote,
+    )
 
     val topicUiState: StateFlow<TopicUiState> = topicUiState(
         topicId = topicId,
@@ -109,7 +115,7 @@ class TopicViewModel @AssistedInject constructor(
 
     fun setNewsResourceViewed(newsResourceId: String, viewed: Boolean) {
         viewModelScope.launch {
-            userDataRepository.setNewsResourceViewed(newsResourceId, viewed)
+            updateNewsResourceViewedUseCase(newsResourceId, viewed)
         }
     }
 

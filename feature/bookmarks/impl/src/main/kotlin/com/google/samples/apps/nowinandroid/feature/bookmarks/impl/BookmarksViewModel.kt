@@ -25,9 +25,11 @@ import androidx.lifecycle.viewModelScope
 import com.google.samples.apps.nowinandroid.core.data.repository.UserDataRepository
 import com.google.samples.apps.nowinandroid.core.data.repository.UserNewsResourceRepository
 import com.google.samples.apps.nowinandroid.core.domain.BulkRemoveBookmarksUseCase
+import com.google.samples.apps.nowinandroid.core.domain.GetBookmarkMementoUseCase
 import com.google.samples.apps.nowinandroid.core.domain.RestoreBookmarksUseCase
 import com.google.samples.apps.nowinandroid.core.domain.UpdateBookmarkNoteUseCase
 import com.google.samples.apps.nowinandroid.core.domain.UpdateNewsResourceBookmarkUseCase
+import com.google.samples.apps.nowinandroid.core.domain.UpdateNewsResourceViewedUseCase
 import com.google.samples.apps.nowinandroid.core.model.data.UserNewsResource
 import com.google.samples.apps.nowinandroid.core.ui.BookmarkNoteViewModelState
 import com.google.samples.apps.nowinandroid.core.ui.NewsFeedUiState
@@ -45,15 +47,20 @@ import javax.inject.Inject
 @HiltViewModel
 class BookmarksViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
-    private val userDataRepository: UserDataRepository,
     userNewsResourceRepository: UserNewsResourceRepository,
     private val updateNewsResourceBookmarkUseCase: UpdateNewsResourceBookmarkUseCase,
     private val bulkRemoveBookmarksUseCase: BulkRemoveBookmarksUseCase,
     private val restoreBookmarksUseCase: RestoreBookmarksUseCase,
-    updateBookmarkNoteUseCase: UpdateBookmarkNoteUseCase,
+    private val getBookmarkMementoUseCase: GetBookmarkMementoUseCase,
+    private val updateNewsResourceViewedUseCase: UpdateNewsResourceViewedUseCase,
+    private val updateBookmarkNoteUseCase: UpdateBookmarkNoteUseCase,
 ) : ViewModel() {
 
-    private val bookmarkNoteViewModelState = BookmarkNoteViewModelState(savedStateHandle, updateBookmarkNoteUseCase)
+    private val bookmarkNoteViewModelState = BookmarkNoteViewModelState(
+        savedStateHandle = savedStateHandle,
+        onSave = updateBookmarkNoteUseCase::saveNote,
+        onDelete = updateBookmarkNoteUseCase::deleteNote,
+    )
 
     var shouldDisplayUndoBookmark by mutableStateOf(false)
     private var lastRemovedBookmarks: Map<String, String?> = emptyMap()
@@ -76,9 +83,7 @@ class BookmarksViewModel @Inject constructor(
 
     fun removeFromSavedResources(newsResourceId: String) {
         viewModelScope.launch {
-            val userData = userDataRepository.userData.firstOrNull()
-            val note = userData?.bookmarkNotes?.get(newsResourceId)
-            lastRemovedBookmarks = mapOf(newsResourceId to note)
+            lastRemovedBookmarks = getBookmarkMementoUseCase(setOf(newsResourceId))
             shouldDisplayUndoBookmark = true
             updateNewsResourceBookmarkUseCase(newsResourceId, false)
         }
@@ -86,7 +91,7 @@ class BookmarksViewModel @Inject constructor(
 
     fun setNewsResourceViewed(newsResourceId: String, viewed: Boolean) {
         viewModelScope.launch {
-            userDataRepository.setNewsResourceViewed(newsResourceId, viewed)
+            updateNewsResourceViewedUseCase(newsResourceId, viewed)
         }
     }
 
@@ -127,11 +132,8 @@ class BookmarksViewModel @Inject constructor(
 
     fun bulkRemove() {
         viewModelScope.launch {
-            val userData = userDataRepository.userData.firstOrNull()
             val currentSelected = selectedResourceIds.value
-            lastRemovedBookmarks = currentSelected.associateWith { id ->
-                userData?.bookmarkNotes?.get(id)
-            }
+            lastRemovedBookmarks = getBookmarkMementoUseCase(currentSelected)
             bulkRemoveBookmarksUseCase(currentSelected.toList())
             shouldDisplayUndoBookmark = true
             toggleSelectionMode()

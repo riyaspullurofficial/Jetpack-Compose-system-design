@@ -29,6 +29,7 @@ import com.google.samples.apps.nowinandroid.core.data.util.SyncManager
 import com.google.samples.apps.nowinandroid.core.domain.GetFollowableTopicsUseCase
 import com.google.samples.apps.nowinandroid.core.domain.UpdateBookmarkNoteUseCase
 import com.google.samples.apps.nowinandroid.core.domain.UpdateNewsResourceBookmarkUseCase
+import com.google.samples.apps.nowinandroid.core.domain.UpdateNewsResourceViewedUseCase
 import com.google.samples.apps.nowinandroid.core.notifications.DEEP_LINK_NEWS_RESOURCE_ID_KEY
 import com.google.samples.apps.nowinandroid.core.ui.BookmarkNoteViewModelState
 import com.google.samples.apps.nowinandroid.core.ui.NewsFeedUiState
@@ -57,10 +58,15 @@ class ForYouViewModel @Inject constructor(
     userNewsResourceRepository: UserNewsResourceRepository,
     getFollowableTopics: GetFollowableTopicsUseCase,
     private val updateNewsResourceBookmarkUseCase: UpdateNewsResourceBookmarkUseCase,
-    updateBookmarkNoteUseCase: UpdateBookmarkNoteUseCase,
+    private val updateNewsResourceViewedUseCase: UpdateNewsResourceViewedUseCase,
+    private val updateBookmarkNoteUseCase: UpdateBookmarkNoteUseCase,
 ) : ViewModel() {
 
-    private val bookmarkNoteViewModelState = BookmarkNoteViewModelState(savedStateHandle, updateBookmarkNoteUseCase)
+    private val bookmarkNoteViewModelState = BookmarkNoteViewModelState(
+        savedStateHandle = savedStateHandle,
+        onSave = updateBookmarkNoteUseCase::saveNote,
+        onDelete = updateBookmarkNoteUseCase::deleteNote,
+    )
 
     private val shouldShowOnboarding: Flow<Boolean> =
         userDataRepository.userData.map { !it.shouldHideOnboarding }
@@ -151,7 +157,7 @@ class ForYouViewModel @Inject constructor(
 
     fun setNewsResourceViewed(newsResourceId: String, viewed: Boolean) {
         viewModelScope.launch {
-            userDataRepository.setNewsResourceViewed(newsResourceId, viewed)
+            updateNewsResourceViewedUseCase(newsResourceId, viewed)
         }
     }
 
@@ -161,7 +167,7 @@ class ForYouViewModel @Inject constructor(
         }
         analyticsHelper.logNewsDeepLinkOpen(newsResourceId = newsResourceId)
         viewModelScope.launch {
-            userDataRepository.setNewsResourceViewed(
+            updateNewsResourceViewedUseCase(
                 newsResourceId = newsResourceId,
                 viewed = true,
             )

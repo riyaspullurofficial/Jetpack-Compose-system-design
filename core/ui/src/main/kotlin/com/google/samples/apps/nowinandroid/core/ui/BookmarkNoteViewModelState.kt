@@ -17,7 +17,6 @@
 package com.google.samples.apps.nowinandroid.core.ui
 
 import androidx.lifecycle.SavedStateHandle
-import com.google.samples.apps.nowinandroid.core.domain.UpdateBookmarkNoteUseCase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -27,7 +26,8 @@ import kotlinx.coroutines.launch
  */
 class BookmarkNoteViewModelState(
     private val savedStateHandle: SavedStateHandle,
-    private val updateBookmarkNoteUseCase: UpdateBookmarkNoteUseCase,
+    private val onSave: suspend (String, String) -> Unit,
+    private val onDelete: suspend (String) -> Unit,
 ) {
     val noteToEdit: StateFlow<Pair<String, String>?> =
         savedStateHandle.getStateFlow(NOTE_TO_EDIT_KEY, null)
@@ -42,7 +42,7 @@ class BookmarkNoteViewModelState(
         note: String,
     ) {
         scope.launch {
-            updateBookmarkNoteUseCase.saveNote(newsResourceId, note)
+            onSave(newsResourceId, note)
             dismissNoteEdit()
         }
     }
@@ -52,7 +52,7 @@ class BookmarkNoteViewModelState(
         newsResourceId: String,
     ) {
         scope.launch {
-            updateBookmarkNoteUseCase.deleteNote(newsResourceId)
+            onDelete(newsResourceId)
             dismissNoteEdit()
         }
     }

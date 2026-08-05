@@ -32,6 +32,7 @@ import com.google.samples.apps.nowinandroid.core.domain.GetRecentSearchQueriesUs
 import com.google.samples.apps.nowinandroid.core.domain.GetSearchContentsUseCase
 import com.google.samples.apps.nowinandroid.core.domain.UpdateBookmarkNoteUseCase
 import com.google.samples.apps.nowinandroid.core.domain.UpdateNewsResourceBookmarkUseCase
+import com.google.samples.apps.nowinandroid.core.domain.UpdateNewsResourceViewedUseCase
 import com.google.samples.apps.nowinandroid.core.model.data.UserSearchResult
 import com.google.samples.apps.nowinandroid.core.ui.BookmarkNoteViewModelState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -55,10 +56,15 @@ class SearchViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val analyticsHelper: AnalyticsHelper,
     private val updateNewsResourceBookmarkUseCase: UpdateNewsResourceBookmarkUseCase,
+    private val updateNewsResourceViewedUseCase: UpdateNewsResourceViewedUseCase,
     private val updateBookmarkNoteUseCase: UpdateBookmarkNoteUseCase,
 ) : ViewModel() {
 
-    private val bookmarkNoteViewModelState = BookmarkNoteViewModelState(savedStateHandle, updateBookmarkNoteUseCase)
+    private val bookmarkNoteViewModelState = BookmarkNoteViewModelState(
+        savedStateHandle = savedStateHandle,
+        onSave = updateBookmarkNoteUseCase::saveNote,
+        onDelete = updateBookmarkNoteUseCase::deleteNote,
+    )
 
     val searchQuery = savedStateHandle.getStateFlow(key = SEARCH_QUERY, initialValue = "")
 
@@ -156,7 +162,7 @@ class SearchViewModel @Inject constructor(
 
     fun setNewsResourceViewed(newsResourceId: String, viewed: Boolean) {
         viewModelScope.launch {
-            userDataRepository.setNewsResourceViewed(newsResourceId, viewed)
+            updateNewsResourceViewedUseCase(newsResourceId, viewed)
         }
     }
 }
