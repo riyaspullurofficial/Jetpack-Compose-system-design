@@ -1,0 +1,15 @@
+task file
+
+Tech task 
+
+
+Bookmark notes: When a user bookmarks an article (from any screen), show an optional text field for a personal note (max 280 characters). Skipping the note is valid. On the Bookmarks screen, display the note below the article title; users can edit or delete a note by tapping it. Notes must persist across app restarts. When an article is unbookmarked, its note must be automatically deleted.
+
+
+Multi-select mode: A way to enter selection mode on the Bookmarks screen (e.g. long-press or 'Edit' button). In selection mode: each article shows a checkbox; tap to select/deselect; 'Select All' available; counter shows how many selected (e.g. '3 selected'); 'Remove' removes all selected bookmarks at once. After bulk removal, show a single undo snackbar that restores ALL removed bookmarks and their notes in one action. A way to exit without acting (e.g. 'Cancel' or back); exit selection mode automatically after a bulk action.
+
+
+Interaction: Bulk-removing bookmarks must clean up associated notes; undo must restore both bookmarks and notes. In selection mode, tapping an article toggles its checkbox — not edit note; note editing only outside selection mode. Existing single-item unbookmark behavior must continue to work outside selection mode.
+
+
+seperate these all task give me a detailed explanation bout task
