@@ -43,7 +43,6 @@ class NiaApplication : Application(), ImageLoaderFactory {
 
         setStrictModePolicy()
 
-        // Initialize Sync; the system responsible for keeping data in the app up to date.
         Sync.initialize(context = this)
         profileVerifierLogger()
     }

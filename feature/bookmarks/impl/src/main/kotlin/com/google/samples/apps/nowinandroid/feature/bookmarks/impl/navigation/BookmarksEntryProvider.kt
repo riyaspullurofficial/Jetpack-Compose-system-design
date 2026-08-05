@@ -42,8 +42,6 @@ fun EntryProviderScope<NavKey>.bookmarksEntry(navigator: Navigator) {
         )
     }
 }
-
-// TODO: Why is this here?
 val LocalSnackbarHostState = compositionLocalOf<SnackbarHostState> {
     error("SnackbarHostState state should be initialized at runtime")
 }

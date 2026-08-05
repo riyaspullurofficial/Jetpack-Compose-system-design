@@ -89,7 +89,6 @@ class MainActivity : ComponentActivity() {
             ),
         )
 
-        // Update the uiState
         lifecycleScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 combine(

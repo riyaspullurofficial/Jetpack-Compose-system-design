@@ -147,7 +147,9 @@ internal fun TopicScreen(
                     )
                 }
 
-                TopicUiState.Error -> TODO()
+                TopicUiState.Error -> item {
+                    Text(text = stringResource(id = TopicR.string.feature_topic_api_error))
+                }
                 is TopicUiState.Success -> {
                     item {
                         TopicToolbar(
@@ -213,7 +215,6 @@ private fun LazyListScope.topicBody(
     onNewsResourceViewed: (String) -> Unit,
     onTopicClick: (String) -> Unit,
 ) {
-    // TODO: Show icon if available
     item {
         TopicHeader(name, description, imageUrl)
     }
@@ -245,7 +246,6 @@ private fun TopicHeader(name: String, description: String, imageUrl: String) {
     }
 }
 
-// TODO: Could/should this be replaced with [LazyGridScope.newsFeed]?
 private fun LazyListScope.userNewsResourceCards(
     news: NewsUiState,
     onBookmarkChanged: (String, Boolean) -> Unit,
@@ -264,11 +264,11 @@ private fun LazyListScope.userNewsResourceCards(
         }
 
         is NewsUiState.Loading -> item {
-            NiaLoadingWheel(contentDesc = "Loading news") // TODO
+            NiaLoadingWheel(contentDesc = "Loading news")
         }
 
         else -> item {
-            Text("Error") // TODO
+            Text("Error")
         }
     }
 }

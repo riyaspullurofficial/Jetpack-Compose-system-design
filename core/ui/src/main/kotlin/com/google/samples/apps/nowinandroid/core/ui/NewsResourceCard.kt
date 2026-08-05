@@ -257,8 +257,6 @@ fun NewsResourceHeaderImage(
             } else {
                 painterResource(drawable.core_designsystem_ic_placeholder_default)
             },
-            // TODO b/226661685: Investigate using alt text of  image to populate content description
-            // decorative image,
             contentDescription = null,
         )
     }

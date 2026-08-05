@@ -9,16 +9,7 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="667e5750-e37a-487a-a71d-83425b6f2a95" name="Changes" comment="task: third phase">
-      <change afterPath="$PROJECT_DIR$/core/domain/src/main/kotlin/com/google/samples/apps/nowinandroid/core/domain/GetBookmarkMementoUseCase.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/core/domain/src/main/kotlin/com/google/samples/apps/nowinandroid/core/domain/UpdateNewsResourceViewedUseCase.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/ui/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/core/ui/build.gradle.kts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/feature/bookmarks/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/bookmarks/impl/BookmarksViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/feature/bookmarks/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/bookmarks/impl/BookmarksViewModel.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/feature/foryou/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/foryou/impl/ForYouViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/feature/foryou/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/foryou/impl/ForYouViewModel.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/feature/search/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/search/impl/SearchViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/feature/search/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/search/impl/SearchViewModel.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/feature/topic/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/topic/impl/TopicViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/feature/topic/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/topic/impl/TopicViewModel.kt" afterDir="false" />
-    </list>
+    <list default="true" id="667e5750-e37a-487a-a71d-83425b6f2a95" name="Changes" comment="task: fourth phase" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -220,7 +211,15 @@
       <option name="project" value="LOCAL" />
       <updated>1785949129045</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="task: fourth phase">
+      <option name="closed" value="true" />
+      <created>1785949748684</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1785949748684</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -238,7 +237,8 @@
     <MESSAGE value="task: Initial work" />
     <MESSAGE value="task: second phase" />
     <MESSAGE value="task: third phase" />
-    <option name="LAST_COMMIT_MESSAGE" value="task: third phase" />
+    <MESSAGE value="task: fourth phase" />
+    <option name="LAST_COMMIT_MESSAGE" value="task: fourth phase" />
   </component>
   <component name="play_dynamic_filters_status">
     <option name="appIdToCheckInfo">
