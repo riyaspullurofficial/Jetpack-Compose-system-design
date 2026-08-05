@@ -16,12 +16,15 @@
 
 package com.google.samples.apps.nowinandroid.core.domain
 
+import com.google.samples.apps.nowinandroid.core.common.result.DomainResult
 import com.google.samples.apps.nowinandroid.core.domain.TopicSortField.NAME
 import com.google.samples.apps.nowinandroid.core.model.data.FollowableTopic
 import com.google.samples.apps.nowinandroid.core.model.data.Topic
 import com.google.samples.apps.nowinandroid.core.testing.repository.TestTopicsRepository
 import com.google.samples.apps.nowinandroid.core.testing.repository.TestUserDataRepository
 import com.google.samples.apps.nowinandroid.core.testing.util.MainDispatcherRule
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
@@ -57,7 +60,7 @@ class GetFollowableTopicsUseCaseTest {
                 FollowableTopic(testTopics[1], false),
                 FollowableTopic(testTopics[2], true),
             ),
-            followableTopics.first(),
+            followableTopics.successData(),
         )
     }
 
@@ -74,7 +77,7 @@ class GetFollowableTopicsUseCaseTest {
 
         // Check that the followable topics are sorted by the topic name.
         assertEquals(
-            followableTopics.first(),
+            followableTopics.successData(),
             testTopics
                 .sortedBy { it.name }
                 .map {
@@ -83,6 +86,9 @@ class GetFollowableTopicsUseCaseTest {
         )
     }
 }
+
+private suspend fun <T> Flow<DomainResult<T>>.successData(): T =
+    filterIsInstance<DomainResult.Success<T>>().first().data
 
 private val testTopics = listOf(
     Topic("1", "Headlines", "", "", "", ""),

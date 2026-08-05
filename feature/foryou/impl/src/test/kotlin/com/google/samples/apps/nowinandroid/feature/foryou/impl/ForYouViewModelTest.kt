@@ -24,6 +24,7 @@ import com.google.samples.apps.nowinandroid.core.data.repository.CompositeUserNe
 import com.google.samples.apps.nowinandroid.core.domain.GetFollowableTopicsUseCase
 import com.google.samples.apps.nowinandroid.core.domain.UpdateBookmarkNoteUseCase
 import com.google.samples.apps.nowinandroid.core.domain.UpdateNewsResourceBookmarkUseCase
+import com.google.samples.apps.nowinandroid.core.domain.UpdateNewsResourceViewedUseCase
 import com.google.samples.apps.nowinandroid.core.model.data.FollowableTopic
 import com.google.samples.apps.nowinandroid.core.model.data.NewsResource
 import com.google.samples.apps.nowinandroid.core.model.data.Topic
@@ -79,6 +80,7 @@ class ForYouViewModelTest {
 
     private val updateNewsResourceBookmarkUseCase = UpdateNewsResourceBookmarkUseCase(userDataRepository)
     private val updateBookmarkNoteUseCase = UpdateBookmarkNoteUseCase(userDataRepository)
+    private val updateNewsResourceViewedUseCase = UpdateNewsResourceViewedUseCase(userDataRepository)
 
     private val savedStateHandle = SavedStateHandle()
     private lateinit var viewModel: ForYouViewModel
@@ -93,6 +95,7 @@ class ForYouViewModelTest {
             userNewsResourceRepository = userNewsResourceRepository,
             getFollowableTopics = getFollowableTopicsUseCase,
             updateNewsResourceBookmarkUseCase = updateNewsResourceBookmarkUseCase,
+            updateNewsResourceViewedUseCase = updateNewsResourceViewedUseCase,
             updateBookmarkNoteUseCase = updateBookmarkNoteUseCase,
         )
     }

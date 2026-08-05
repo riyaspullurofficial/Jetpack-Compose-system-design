@@ -4,22 +4,32 @@
     <shared>
       <config />
     </shared>
+    <layouts>
+      <layout url="file://$PROJECT_DIR$/feature/bookmarks/api/src/main/res/drawable/feature_bookmarks_api_mg_empty_bookmarks.xml">
+        <config>
+          <theme>@android:style/Theme.Material.Light</theme>
+        </config>
+      </layout>
+    </layouts>
   </component>
   <component name="AutoImportSettings">
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="667e5750-e37a-487a-a71d-83425b6f2a95" name="Changes" comment="task: nine phase - domain Error implemented">
-      <change afterPath="$PROJECT_DIR$/core/common/src/main/kotlin/com/google/samples/apps/nowinandroid/core/common/result/ActionResult.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/ui/src/main/kotlin/com/google/samples/apps/nowinandroid/core/ui/BookmarkNoteViewModelState.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/ui/src/main/kotlin/com/google/samples/apps/nowinandroid/core/ui/BookmarkNoteViewModelState.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/feature/bookmarks/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/bookmarks/impl/BookmarksScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/feature/bookmarks/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/bookmarks/impl/BookmarksScreen.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/feature/bookmarks/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/bookmarks/impl/BookmarksViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/feature/bookmarks/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/bookmarks/impl/BookmarksViewModel.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/feature/foryou/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/foryou/impl/ForYouScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/feature/foryou/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/foryou/impl/ForYouScreen.kt" afterDir="false" />
+    <list default="true" id="667e5750-e37a-487a-a71d-83425b6f2a95" name="Changes" comment="task: ten phase - Action result implemented">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/testDemo/kotlin/com/google/samples/apps/nowinandroid/ui/NiaAppScreenSizesScreenshotTests.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/testDemo/kotlin/com/google/samples/apps/nowinandroid/ui/NiaAppScreenSizesScreenshotTests.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/testDemo/kotlin/com/google/samples/apps/nowinandroid/ui/SnackbarInsetsScreenshotTests.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/testDemo/kotlin/com/google/samples/apps/nowinandroid/ui/SnackbarInsetsScreenshotTests.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/testDemo/kotlin/com/google/samples/apps/nowinandroid/ui/SnackbarScreenshotTests.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/testDemo/kotlin/com/google/samples/apps/nowinandroid/ui/SnackbarScreenshotTests.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/data-test/src/main/kotlin/com/google/samples/apps/nowinandroid/core/data/test/repository/FakeUserDataRepository.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/data-test/src/main/kotlin/com/google/samples/apps/nowinandroid/core/data/test/repository/FakeUserDataRepository.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/domain/src/main/kotlin/com/google/samples/apps/nowinandroid/core/domain/GetBookmarkMementoUseCase.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/domain/src/main/kotlin/com/google/samples/apps/nowinandroid/core/domain/GetBookmarkMementoUseCase.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/domain/src/test/kotlin/com/google/samples/apps/nowinandroid/core/domain/GetFollowableTopicsUseCaseTest.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/domain/src/test/kotlin/com/google/samples/apps/nowinandroid/core/domain/GetFollowableTopicsUseCaseTest.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/feature/bookmarks/impl/src/test/kotlin/com/google/samples/apps/nowinandroid/feature/bookmarks/impl/BookmarksViewModelTest.kt" beforeDir="false" afterPath="$PROJECT_DIR$/feature/bookmarks/impl/src/test/kotlin/com/google/samples/apps/nowinandroid/feature/bookmarks/impl/BookmarksViewModelTest.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/feature/foryou/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/foryou/impl/ForYouViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/feature/foryou/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/foryou/impl/ForYouViewModel.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/feature/interests/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/interests/impl/InterestsViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/feature/interests/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/interests/impl/InterestsViewModel.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/feature/search/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/search/impl/SearchViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/feature/search/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/search/impl/SearchViewModel.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/feature/settings/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/settings/impl/SettingsViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/feature/settings/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/settings/impl/SettingsViewModel.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/feature/topic/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/topic/impl/TopicViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/feature/topic/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/topic/impl/TopicViewModel.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/feature/foryou/impl/src/test/kotlin/com/google/samples/apps/nowinandroid/feature/foryou/impl/ForYouScreenScreenshotTests.kt" beforeDir="false" afterPath="$PROJECT_DIR$/feature/foryou/impl/src/test/kotlin/com/google/samples/apps/nowinandroid/feature/foryou/impl/ForYouScreenScreenshotTests.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/feature/foryou/impl/src/test/kotlin/com/google/samples/apps/nowinandroid/feature/foryou/impl/ForYouViewModelTest.kt" beforeDir="false" afterPath="$PROJECT_DIR$/feature/foryou/impl/src/test/kotlin/com/google/samples/apps/nowinandroid/feature/foryou/impl/ForYouViewModelTest.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/feature/search/impl/src/test/kotlin/com/google/samples/apps/nowinandroid/feature/search/impl/SearchViewModelTest.kt" beforeDir="false" afterPath="$PROJECT_DIR$/feature/search/impl/src/test/kotlin/com/google/samples/apps/nowinandroid/feature/search/impl/SearchViewModelTest.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/feature/topic/impl/src/test/kotlin/com/google/samples/apps/nowinandroid/feature/topic/impl/TopicViewModelTest.kt" beforeDir="false" afterPath="$PROJECT_DIR$/feature/topic/impl/src/test/kotlin/com/google/samples/apps/nowinandroid/feature/topic/impl/TopicViewModelTest.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -280,7 +290,15 @@
       <option name="project" value="LOCAL" />
       <updated>1785964428738</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="task: ten phase - Action result implemented">
+      <option name="closed" value="true" />
+      <created>1785965104478</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1785965104478</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -304,7 +322,8 @@
     <MESSAGE value="task: sixth phase - domain result implemented" />
     <MESSAGE value="task: eighth phase - domain result used place loading time loader uses" />
     <MESSAGE value="task: nine phase - domain Error implemented" />
-    <option name="LAST_COMMIT_MESSAGE" value="task: nine phase - domain Error implemented" />
+    <MESSAGE value="task: ten phase - Action result implemented" />
+    <option name="LAST_COMMIT_MESSAGE" value="task: ten phase - Action result implemented" />
   </component>
   <component name="play_dynamic_filters_status">
     <option name="appIdToCheckInfo">

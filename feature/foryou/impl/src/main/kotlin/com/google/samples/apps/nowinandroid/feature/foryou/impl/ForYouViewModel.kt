@@ -75,12 +75,12 @@ class ForYouViewModel @Inject constructor(
         onToggleBookmark = updateNewsResourceBookmarkUseCase::invoke,
     )
 
-    private val shouldShowOnboarding: Flow<Boolean> =
+    private val shouldShowOnboarding: Flow<Boolean?> =
         userDataRepository.userData.map { result ->
-            if (result is DomainResult.Success) {
-                !result.data.shouldHideOnboarding
-            } else {
-                false
+            when (result) {
+                is DomainResult.Success -> !result.data.shouldHideOnboarding
+                is DomainResult.Error -> false
+                DomainResult.Loading -> null
             }
         }
 
@@ -139,14 +139,17 @@ class ForYouViewModel @Inject constructor(
             shouldShowOnboarding,
             getFollowableTopics(),
         ) { shouldShowOnboarding, topicsResult ->
-            if (shouldShowOnboarding) {
-                when (topicsResult) {
-                    is DomainResult.Success -> OnboardingUiState.Shown(topics = topicsResult.data)
-                    is DomainResult.Error -> OnboardingUiState.LoadFailed
-                    DomainResult.Loading -> OnboardingUiState.Loading
+            when (shouldShowOnboarding) {
+                null -> OnboardingUiState.Loading
+                true -> {
+                    when (topicsResult) {
+                        is DomainResult.Success -> OnboardingUiState.Shown(topics = topicsResult.data)
+                        is DomainResult.Error -> OnboardingUiState.LoadFailed
+                        DomainResult.Loading -> OnboardingUiState.Loading
+                    }
                 }
-            } else {
-                OnboardingUiState.NotShown
+
+                false -> OnboardingUiState.NotShown
             }
         }
             .stateIn(

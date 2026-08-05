@@ -17,9 +17,11 @@
 package com.google.samples.apps.nowinandroid.feature.topic.impl
 
 import androidx.lifecycle.SavedStateHandle
+import com.google.samples.apps.nowinandroid.core.common.result.DomainResult
 import com.google.samples.apps.nowinandroid.core.data.repository.CompositeUserNewsResourceRepository
 import com.google.samples.apps.nowinandroid.core.domain.UpdateBookmarkNoteUseCase
 import com.google.samples.apps.nowinandroid.core.domain.UpdateNewsResourceBookmarkUseCase
+import com.google.samples.apps.nowinandroid.core.domain.UpdateNewsResourceViewedUseCase
 import com.google.samples.apps.nowinandroid.core.model.data.FollowableTopic
 import com.google.samples.apps.nowinandroid.core.model.data.NewsResource
 import com.google.samples.apps.nowinandroid.core.model.data.Topic
@@ -27,8 +29,11 @@ import com.google.samples.apps.nowinandroid.core.testing.repository.TestNewsRepo
 import com.google.samples.apps.nowinandroid.core.testing.repository.TestTopicsRepository
 import com.google.samples.apps.nowinandroid.core.testing.repository.TestUserDataRepository
 import com.google.samples.apps.nowinandroid.core.testing.util.MainDispatcherRule
+import com.google.samples.apps.nowinandroid.core.ui.NewsFeedUiState
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -58,6 +63,7 @@ class TopicViewModelTest {
     )
     private val updateNewsResourceBookmarkUseCase = UpdateNewsResourceBookmarkUseCase(userDataRepository)
     private val updateBookmarkNoteUseCase = UpdateBookmarkNoteUseCase(userDataRepository)
+    private val updateNewsResourceViewedUseCase = UpdateNewsResourceViewedUseCase(userDataRepository)
 
     private lateinit var viewModel: TopicViewModel
 
@@ -69,6 +75,7 @@ class TopicViewModelTest {
             topicsRepository = topicsRepository,
             userNewsResourceRepository = userNewsResourceRepository,
             updateNewsResourceBookmarkUseCase = updateNewsResourceBookmarkUseCase,
+            updateNewsResourceViewedUseCase = updateNewsResourceViewedUseCase,
             updateBookmarkNoteUseCase = updateBookmarkNoteUseCase,
             topicId = testInputTopics[0].topic.id,
         )
@@ -89,14 +96,14 @@ class TopicViewModelTest {
 
         val topicFromRepository = topicsRepository.getTopic(
             testInputTopics[0].topic.id,
-        ).first()
+        ).successData()
 
         assertEquals(topicFromRepository, item.followableTopic.topic)
     }
 
     @Test
     fun uiStateNews_whenInitialized_thenShowLoading() = runTest {
-        assertEquals(NewsUiState.Loading, viewModel.newsUiState.value)
+        assertEquals(NewsFeedUiState.Loading, viewModel.newsUiState.value)
     }
 
     @Test
@@ -123,7 +130,7 @@ class TopicViewModelTest {
             val newsUiState = viewModel.newsUiState.value
 
             assertIs<TopicUiState.Success>(topicUiState)
-            assertIs<NewsUiState.Loading>(newsUiState)
+            assertIs<NewsFeedUiState.Loading>(newsUiState)
         }
 
     @Test
@@ -143,7 +150,7 @@ class TopicViewModelTest {
             val newsUiState = viewModel.newsUiState.value
 
             assertIs<TopicUiState.Success>(topicUiState)
-            assertIs<NewsUiState.Success>(newsUiState)
+            assertIs<NewsFeedUiState.Success>(newsUiState)
         }
 
     @Test
@@ -162,6 +169,9 @@ class TopicViewModelTest {
         )
     }
 }
+
+private suspend fun <T> Flow<DomainResult<T>>.successData(): T =
+    filterIsInstance<DomainResult.Success<T>>().first().data
 
 private const val TOPIC_1_NAME = "Android Studio"
 private const val TOPIC_2_NAME = "Build"

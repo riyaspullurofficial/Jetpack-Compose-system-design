@@ -18,7 +18,7 @@ package com.google.samples.apps.nowinandroid.core.domain
 
 import com.google.samples.apps.nowinandroid.core.data.repository.UserDataRepository
 import com.google.samples.apps.nowinandroid.core.common.result.DomainResult
-import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
 /**
@@ -29,7 +29,7 @@ class GetBookmarkMementoUseCase @Inject constructor(
     private val userDataRepository: UserDataRepository,
 ) {
     suspend operator fun invoke(newsResourceIds: Set<String>): Map<String, String?> {
-        val userDataResult = userDataRepository.userData.firstOrNull()
+        val userDataResult = userDataRepository.userData.first { it is DomainResult.Success }
         if (userDataResult is DomainResult.Success) {
             val userData = userDataResult.data
             return newsResourceIds.associateWith { id ->

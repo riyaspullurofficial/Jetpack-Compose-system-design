@@ -19,9 +19,11 @@ package com.google.samples.apps.nowinandroid.feature.bookmarks.impl
 import androidx.lifecycle.SavedStateHandle
 import com.google.samples.apps.nowinandroid.core.data.repository.CompositeUserNewsResourceRepository
 import com.google.samples.apps.nowinandroid.core.domain.BulkRemoveBookmarksUseCase
+import com.google.samples.apps.nowinandroid.core.domain.GetBookmarkMementoUseCase
 import com.google.samples.apps.nowinandroid.core.domain.RestoreBookmarksUseCase
 import com.google.samples.apps.nowinandroid.core.domain.UpdateBookmarkNoteUseCase
 import com.google.samples.apps.nowinandroid.core.domain.UpdateNewsResourceBookmarkUseCase
+import com.google.samples.apps.nowinandroid.core.domain.UpdateNewsResourceViewedUseCase
 import com.google.samples.apps.nowinandroid.core.testing.data.newsResourcesTestData
 import com.google.samples.apps.nowinandroid.core.testing.repository.TestNewsRepository
 import com.google.samples.apps.nowinandroid.core.testing.repository.TestUserDataRepository
@@ -59,6 +61,8 @@ class BookmarksViewModelTest {
     private val bulkRemoveBookmarksUseCase = BulkRemoveBookmarksUseCase(userDataRepository)
     private val restoreBookmarksUseCase = RestoreBookmarksUseCase(userDataRepository)
     private val updateBookmarkNoteUseCase = UpdateBookmarkNoteUseCase(userDataRepository)
+    private val getBookmarkMementoUseCase = GetBookmarkMementoUseCase(userDataRepository)
+    private val updateNewsResourceViewedUseCase = UpdateNewsResourceViewedUseCase(userDataRepository)
 
     private lateinit var viewModel: BookmarksViewModel
 
@@ -66,11 +70,12 @@ class BookmarksViewModelTest {
     fun setup() {
         viewModel = BookmarksViewModel(
             savedStateHandle = SavedStateHandle(),
-            userDataRepository = userDataRepository,
             userNewsResourceRepository = userNewsResourceRepository,
             updateNewsResourceBookmarkUseCase = updateNewsResourceBookmarkUseCase,
             bulkRemoveBookmarksUseCase = bulkRemoveBookmarksUseCase,
             restoreBookmarksUseCase = restoreBookmarksUseCase,
+            getBookmarkMementoUseCase = getBookmarkMementoUseCase,
+            updateNewsResourceViewedUseCase = updateNewsResourceViewedUseCase,
             updateBookmarkNoteUseCase = updateBookmarkNoteUseCase,
         )
     }
@@ -152,20 +157,20 @@ class BookmarksViewModelTest {
 
     @Test
     fun selectionMode_toggling_updatesState() = runTest {
-        assertFalse(viewModel.isSelectionMode)
+        assertFalse(viewModel.isSelectionMode.value)
         viewModel.toggleSelectionMode()
-        assertTrue(viewModel.isSelectionMode)
+        assertTrue(viewModel.isSelectionMode.value)
         viewModel.toggleSelectionMode()
-        assertFalse(viewModel.isSelectionMode)
+        assertFalse(viewModel.isSelectionMode.value)
     }
 
     @Test
     fun selectionMode_togglingSelection_updatesState() = runTest {
         viewModel.toggleSelectionMode()
         viewModel.toggleResourceSelection("1")
-        assertTrue("1" in viewModel.selectedResourceIds)
+        assertTrue("1" in viewModel.selectedResourceIds.value)
         viewModel.toggleResourceSelection("1")
-        assertFalse("1" in viewModel.selectedResourceIds)
+        assertFalse("1" in viewModel.selectedResourceIds.value)
     }
 
     @Test
@@ -184,7 +189,7 @@ class BookmarksViewModelTest {
         assertIs<Success>(item)
         assertEquals(0, item.feed.size)
         assertTrue(viewModel.shouldDisplayUndoBookmark)
-        assertFalse(viewModel.isSelectionMode)
+        assertFalse(viewModel.isSelectionMode.value)
     }
 
     @Test

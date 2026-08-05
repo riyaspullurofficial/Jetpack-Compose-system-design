@@ -48,6 +48,7 @@ import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.DeviceConfigurationOverride
 import androidx.compose.ui.test.ForcedSize
+import androidx.compose.ui.test.WindowInsets
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.unit.Density
@@ -60,6 +61,8 @@ import androidx.core.graphics.Insets
 import androidx.core.view.WindowInsetsCompat
 import androidx.window.core.layout.WindowSizeClass
 import com.github.takahirom.roborazzi.captureRoboImage
+import com.google.samples.apps.nowinandroid.MainActivityUiState
+import com.google.samples.apps.nowinandroid.core.common.result.DomainResult
 import com.google.samples.apps.nowinandroid.core.data.repository.TopicsRepository
 import com.google.samples.apps.nowinandroid.core.data.repository.UserNewsResourceRepository
 import com.google.samples.apps.nowinandroid.core.data.test.repository.FakeUserDataRepository
@@ -73,6 +76,8 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -135,7 +140,7 @@ class SnackbarInsetsScreenshotTests {
             userDataRepository.setShouldHideOnboarding(true)
 
             userDataRepository.setFollowedTopicIds(
-                setOf(topicsRepository.getTopics().first().first().id),
+                setOf(topicsRepository.getTopics().successData().first().id),
             )
         }
     }
@@ -207,6 +212,8 @@ class SnackbarInsetsScreenshotTests {
         screenshotName: String,
         action: suspend (snackbarHostState: SnackbarHostState) -> Unit,
     ) {
+        val userData = runBlocking { userDataRepository.userData.successData() }
+
         lateinit var scope: CoroutineScope
         val snackbarHostState = SnackbarHostState()
         composeTestRule.setContent {
@@ -253,6 +260,7 @@ class SnackbarInsetsScreenshotTests {
                                 )
                                 NiaApp(
                                     appState = appState,
+                                    mainActivityUiState = MainActivityUiState.Success(userData),
                                     showSettingsDialog = false,
                                     onSettingsDismissed = {},
                                     onTopAppBarActionClick = {},
@@ -283,6 +291,9 @@ class SnackbarInsetsScreenshotTests {
             )
     }
 }
+
+private suspend fun <T> Flow<DomainResult<T>>.successData(): T =
+    filterIsInstance<DomainResult.Success<T>>().first().data
 
 @Composable
 fun DebugVisibleWindowInsets(

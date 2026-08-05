@@ -29,6 +29,8 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowSizeClass
 import com.github.takahirom.roborazzi.captureRoboImage
+import com.google.samples.apps.nowinandroid.MainActivityUiState
+import com.google.samples.apps.nowinandroid.core.common.result.DomainResult
 import com.google.samples.apps.nowinandroid.core.data.repository.TopicsRepository
 import com.google.samples.apps.nowinandroid.core.data.repository.UserDataRepository
 import com.google.samples.apps.nowinandroid.core.data.repository.UserNewsResourceRepository
@@ -40,6 +42,8 @@ import com.google.samples.apps.nowinandroid.uitesthiltmanifest.HiltComponentActi
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
@@ -101,7 +105,7 @@ class NiaAppScreenSizesScreenshotTests {
             userDataRepository.setShouldHideOnboarding(true)
 
             userDataRepository.setFollowedTopicIds(
-                setOf(topicsRepository.getTopics().first().first().id),
+                setOf(topicsRepository.getTopics().successData().first().id),
             )
         }
     }
@@ -113,6 +117,8 @@ class NiaAppScreenSizesScreenshotTests {
     }
 
     private fun testNiaAppScreenshotWithSize(width: Dp, height: Dp, screenshotName: String) {
+        val userData = runBlocking { userDataRepository.userData.successData() }
+
         composeTestRule.setContent {
             CompositionLocalProvider(
                 LocalInspectionMode provides true,
@@ -128,6 +134,7 @@ class NiaAppScreenSizesScreenshotTests {
                         )
                         NiaApp(
                             fakeAppState,
+                            mainActivityUiState = MainActivityUiState.Success(userData),
                             windowAdaptiveInfo = WindowAdaptiveInfo(
                                 windowSizeClass = WindowSizeClass.compute(
                                     width.value,
@@ -229,3 +236,6 @@ class NiaAppScreenSizesScreenshotTests {
         )
     }
 }
+
+private suspend fun <T> Flow<DomainResult<T>>.successData(): T =
+    filterIsInstance<DomainResult.Success<T>>().first().data

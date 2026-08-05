@@ -23,6 +23,7 @@ import com.google.android.apps.common.testing.accessibility.framework.Accessibil
 import com.google.android.apps.common.testing.accessibility.framework.AccessibilityCheckResultUtils.matchesElements
 import com.google.android.apps.common.testing.accessibility.framework.checks.TextContrastCheck
 import com.google.android.apps.common.testing.accessibility.framework.matcher.ElementMatchers.withText
+import com.google.samples.apps.nowinandroid.core.common.result.ActionResult
 import com.google.samples.apps.nowinandroid.core.designsystem.component.NiaBackground
 import com.google.samples.apps.nowinandroid.core.designsystem.theme.NiaTheme
 import com.google.samples.apps.nowinandroid.core.testing.util.DefaultTestDevices
@@ -78,6 +79,7 @@ class ForYouScreenScreenshotTests {
                     feedState = Success(
                         feed = userNewsResources,
                     ),
+                    actionResult = ActionResult.Idle,
                     onTopicCheckedChanged = { _, _ -> },
                     saveFollowedTopics = {},
                     onNewsResourcesCheckedChanged = { _, _ -> },
@@ -98,6 +100,7 @@ class ForYouScreenScreenshotTests {
                     isSyncing = false,
                     onboardingUiState = OnboardingUiState.Loading,
                     feedState = NewsFeedUiState.Loading,
+                    actionResult = ActionResult.Idle,
                     onTopicCheckedChanged = { _, _ -> },
                     saveFollowedTopics = {},
                     onNewsResourcesCheckedChanged = { _, _ -> },
@@ -174,6 +177,7 @@ class ForYouScreenScreenshotTests {
                     feedState = Success(
                         feed = userNewsResources,
                     ),
+                    actionResult = ActionResult.Idle,
                     onTopicCheckedChanged = { _, _ -> },
                     saveFollowedTopics = {},
                     onNewsResourcesCheckedChanged = { _, _ -> },
@@ -197,6 +201,7 @@ class ForYouScreenScreenshotTests {
                         feedState = Success(
                             feed = userNewsResources,
                         ),
+                        actionResult = ActionResult.Idle,
                         onTopicCheckedChanged = { _, _ -> },
                         saveFollowedTopics = {},
                         onNewsResourcesCheckedChanged = { _, _ -> },
