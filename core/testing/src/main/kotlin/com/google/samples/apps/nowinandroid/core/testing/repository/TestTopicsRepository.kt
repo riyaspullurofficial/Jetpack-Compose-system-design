@@ -16,6 +16,8 @@
 
 package com.google.samples.apps.nowinandroid.core.testing.repository
 
+import com.google.samples.apps.nowinandroid.core.common.result.DomainResult
+import com.google.samples.apps.nowinandroid.core.common.result.asDomainResult
 import com.google.samples.apps.nowinandroid.core.data.Synchronizer
 import com.google.samples.apps.nowinandroid.core.data.repository.TopicsRepository
 import com.google.samples.apps.nowinandroid.core.model.data.Topic
@@ -31,10 +33,10 @@ class TestTopicsRepository : TopicsRepository {
     private val topicsFlow: MutableSharedFlow<List<Topic>> =
         MutableSharedFlow(replay = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
-    override fun getTopics(): Flow<List<Topic>> = topicsFlow
+    override fun getTopics(): Flow<DomainResult<List<Topic>>> = topicsFlow.asDomainResult()
 
-    override fun getTopic(id: String): Flow<Topic> =
-        topicsFlow.map { topics -> topics.find { it.id == id }!! }
+    override fun getTopic(id: String): Flow<DomainResult<Topic>> =
+        topicsFlow.map { topics -> topics.find { it.id == id }!! }.asDomainResult()
 
     /**
      * A test-only API to allow controlling the list of topics from tests.

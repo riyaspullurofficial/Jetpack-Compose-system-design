@@ -20,6 +20,8 @@ import com.google.samples.apps.nowinandroid.core.data.model.RecentSearchQuery
 import com.google.samples.apps.nowinandroid.core.data.model.asExternalModel
 import com.google.samples.apps.nowinandroid.core.database.dao.RecentSearchQueryDao
 import com.google.samples.apps.nowinandroid.core.database.model.RecentSearchQueryEntity
+import com.google.samples.apps.nowinandroid.core.common.result.DomainResult
+import com.google.samples.apps.nowinandroid.core.common.result.asDomainResult
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.Clock
@@ -37,10 +39,12 @@ internal class DefaultRecentSearchRepository @Inject constructor(
         )
     }
 
-    override fun getRecentSearchQueries(limit: Int): Flow<List<RecentSearchQuery>> =
-        recentSearchQueryDao.getRecentSearchQueryEntities(limit).map { searchQueries ->
-            searchQueries.map { it.asExternalModel() }
-        }
+    override fun getRecentSearchQueries(limit: Int): Flow<DomainResult<List<RecentSearchQuery>>> =
+        recentSearchQueryDao.getRecentSearchQueryEntities(limit)
+            .map { searchQueries ->
+                searchQueries.map { it.asExternalModel() }
+            }
+            .asDomainResult()
 
     override suspend fun clearRecentSearches() = recentSearchQueryDao.clearRecentSearchQueries()
 }

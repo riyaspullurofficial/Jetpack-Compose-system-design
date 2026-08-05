@@ -18,6 +18,7 @@ package com.google.samples.apps.nowinandroid.core.domain
 
 import com.google.samples.apps.nowinandroid.core.data.model.RecentSearchQuery
 import com.google.samples.apps.nowinandroid.core.data.repository.RecentSearchRepository
+import com.google.samples.apps.nowinandroid.core.common.result.DomainResult
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
@@ -27,6 +28,6 @@ import javax.inject.Inject
 class GetRecentSearchQueriesUseCase @Inject constructor(
     private val recentSearchRepository: RecentSearchRepository,
 ) {
-    operator fun invoke(limit: Int = 10): Flow<List<RecentSearchQuery>> =
+    operator fun invoke(limit: Int = 10): Flow<DomainResult<List<RecentSearchQuery>>> =
         recentSearchRepository.getRecentSearchQueries(limit)
 }

@@ -16,6 +16,7 @@
 
 package com.google.samples.apps.nowinandroid.core.data.repository
 
+import com.google.samples.apps.nowinandroid.core.common.result.DomainResult
 import com.google.samples.apps.nowinandroid.core.data.Synchronizer
 import com.google.samples.apps.nowinandroid.core.data.model.asEntity
 import com.google.samples.apps.nowinandroid.core.data.testdoubles.CollectionType
@@ -29,6 +30,8 @@ import com.google.samples.apps.nowinandroid.core.datastore.UserPreferences
 import com.google.samples.apps.nowinandroid.core.datastore.test.InMemoryDataStore
 import com.google.samples.apps.nowinandroid.core.model.data.Topic
 import com.google.samples.apps.nowinandroid.core.network.model.NetworkTopic
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -74,7 +77,7 @@ class OfflineFirstTopicsRepositoryTest {
                     .first()
                     .map(TopicEntity::asExternalModel),
                 subject.getTopics()
-                    .first(),
+                    .successData(),
             )
         }
 
@@ -172,3 +175,6 @@ class OfflineFirstTopicsRepositoryTest {
             )
         }
 }
+
+private suspend fun <T> Flow<DomainResult<T>>.successData(): T =
+    filterIsInstance<DomainResult.Success<T>>().first().data

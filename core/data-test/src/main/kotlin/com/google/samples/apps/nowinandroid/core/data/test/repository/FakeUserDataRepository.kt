@@ -16,6 +16,8 @@
 
 package com.google.samples.apps.nowinandroid.core.data.test.repository
 
+import com.google.samples.apps.nowinandroid.core.common.result.DomainResult
+import com.google.samples.apps.nowinandroid.core.common.result.asDomainResult
 import com.google.samples.apps.nowinandroid.core.data.repository.UserDataRepository
 import com.google.samples.apps.nowinandroid.core.datastore.NiaPreferencesDataSource
 import com.google.samples.apps.nowinandroid.core.model.data.DarkThemeConfig
@@ -34,7 +36,7 @@ class FakeUserDataRepository @Inject constructor(
     private val niaPreferencesDataSource: NiaPreferencesDataSource,
 ) : UserDataRepository {
 
-    override val userData: Flow<UserData> =
+    override val userData: Flow<DomainResult<UserData>> =
         niaPreferencesDataSource.userData
 
     override suspend fun setFollowedTopicIds(followedTopicIds: Set<String>) =

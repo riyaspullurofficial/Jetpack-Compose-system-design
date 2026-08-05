@@ -16,15 +16,16 @@
 
 package com.google.samples.apps.nowinandroid.core.domain
 
+import com.google.samples.apps.nowinandroid.core.common.result.DomainResult
 import com.google.samples.apps.nowinandroid.core.data.repository.SearchContentsRepository
 import com.google.samples.apps.nowinandroid.core.data.repository.UserDataRepository
 import com.google.samples.apps.nowinandroid.core.model.data.FollowableTopic
-import com.google.samples.apps.nowinandroid.core.model.data.SearchResult
-import com.google.samples.apps.nowinandroid.core.model.data.UserData
 import com.google.samples.apps.nowinandroid.core.model.data.UserNewsResource
 import com.google.samples.apps.nowinandroid.core.model.data.UserSearchResult
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 /**
@@ -37,25 +38,41 @@ class GetSearchContentsUseCase @Inject constructor(
 
     operator fun invoke(
         searchQuery: String,
-    ): Flow<UserSearchResult> =
+    ): Flow<DomainResult<UserSearchResult>> =
         searchContentsRepository.searchContents(searchQuery)
-            .mapToUserSearchResult(userDataRepository.userData)
-}
+            .flatMapLatest { searchResultResult ->
+                when (searchResultResult) {
+                    is DomainResult.Success -> {
+                        userDataRepository.userData.map { userDataResult ->
+                            if (userDataResult is DomainResult.Success) {
+                                val userData = userDataResult.data
+                                val searchResult = searchResultResult.data
+                                DomainResult.Success(
+                                    UserSearchResult(
+                                        topics = searchResult.topics.map { topic ->
+                                            FollowableTopic(
+                                                topic = topic,
+                                                isFollowed = topic.id in userData.followedTopics,
+                                            )
+                                        },
+                                        newsResources = searchResult.newsResources.map { news ->
+                                            UserNewsResource(
+                                                newsResource = news,
+                                                userData = userData,
+                                            )
+                                        },
+                                    ),
+                                )
+                            } else if (userDataResult is DomainResult.Error) {
+                                DomainResult.Error(userDataResult.exception, userDataResult.message)
+                            } else {
+                                DomainResult.Loading
+                            }
+                        }
+                    }
 
-private fun Flow<SearchResult>.mapToUserSearchResult(userDataStream: Flow<UserData>): Flow<UserSearchResult> =
-    combine(userDataStream) { searchResult, userData ->
-        UserSearchResult(
-            topics = searchResult.topics.map { topic ->
-                FollowableTopic(
-                    topic = topic,
-                    isFollowed = topic.id in userData.followedTopics,
-                )
-            },
-            newsResources = searchResult.newsResources.map { news ->
-                UserNewsResource(
-                    newsResource = news,
-                    userData = userData,
-                )
-            },
-        )
-    }
+                    is DomainResult.Error -> flowOf(DomainResult.Error(searchResultResult.exception, searchResultResult.message))
+                    DomainResult.Loading -> flowOf(DomainResult.Loading)
+                }
+            }
+}

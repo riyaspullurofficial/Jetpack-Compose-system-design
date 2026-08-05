@@ -23,6 +23,8 @@ import com.google.samples.apps.nowinandroid.core.database.dao.TopicDao
 import com.google.samples.apps.nowinandroid.core.database.model.TopicEntity
 import com.google.samples.apps.nowinandroid.core.database.model.asExternalModel
 import com.google.samples.apps.nowinandroid.core.datastore.ChangeListVersions
+import com.google.samples.apps.nowinandroid.core.common.result.DomainResult
+import com.google.samples.apps.nowinandroid.core.common.result.asDomainResult
 import com.google.samples.apps.nowinandroid.core.model.data.Topic
 import com.google.samples.apps.nowinandroid.core.network.NiaNetworkDataSource
 import com.google.samples.apps.nowinandroid.core.network.model.NetworkTopic
@@ -39,12 +41,15 @@ internal class OfflineFirstTopicsRepository @Inject constructor(
     private val network: NiaNetworkDataSource,
 ) : TopicsRepository {
 
-    override fun getTopics(): Flow<List<Topic>> =
+    override fun getTopics(): Flow<DomainResult<List<Topic>>> =
         topicDao.getTopicEntities()
             .map { it.map(TopicEntity::asExternalModel) }
+            .asDomainResult()
 
-    override fun getTopic(id: String): Flow<Topic> =
-        topicDao.getTopicEntity(id).map { it.asExternalModel() }
+    override fun getTopic(id: String): Flow<DomainResult<Topic>> =
+        topicDao.getTopicEntity(id)
+            .map { it.asExternalModel() }
+            .asDomainResult()
 
     override suspend fun syncWith(synchronizer: Synchronizer): Boolean =
         synchronizer.changeListSync(

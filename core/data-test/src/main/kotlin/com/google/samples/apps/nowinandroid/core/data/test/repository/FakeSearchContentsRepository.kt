@@ -16,6 +16,8 @@
 
 package com.google.samples.apps.nowinandroid.core.data.test.repository
 
+import com.google.samples.apps.nowinandroid.core.common.result.DomainResult
+import com.google.samples.apps.nowinandroid.core.common.result.asDomainResult
 import com.google.samples.apps.nowinandroid.core.data.repository.SearchContentsRepository
 import com.google.samples.apps.nowinandroid.core.model.data.SearchResult
 import kotlinx.coroutines.flow.Flow
@@ -28,6 +30,8 @@ import javax.inject.Inject
 internal class FakeSearchContentsRepository @Inject constructor() : SearchContentsRepository {
 
     override suspend fun populateFtsData() = Unit
-    override fun searchContents(searchQuery: String): Flow<SearchResult> = flowOf()
+    override fun searchContents(searchQuery: String): Flow<DomainResult<SearchResult>> =
+        flowOf(SearchResult()).asDomainResult()
+
     override fun getSearchContentsCount(): Flow<Int> = flowOf(1)
 }

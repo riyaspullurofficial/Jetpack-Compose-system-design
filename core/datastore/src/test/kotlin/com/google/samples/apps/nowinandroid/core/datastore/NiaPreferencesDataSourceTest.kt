@@ -17,6 +17,10 @@
 package com.google.samples.apps.nowinandroid.core.datastore
 
 import com.google.samples.apps.nowinandroid.core.datastore.test.InMemoryDataStore
+import com.google.samples.apps.nowinandroid.core.model.data.UserData
+import com.google.samples.apps.nowinandroid.core.common.result.DomainResult
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -39,13 +43,13 @@ class NiaPreferencesDataSourceTest {
 
     @Test
     fun shouldHideOnboardingIsFalseByDefault() = testScope.runTest {
-        assertFalse(subject.userData.first().shouldHideOnboarding)
+        assertFalse(subject.userData.userData().shouldHideOnboarding)
     }
 
     @Test
     fun userShouldHideOnboardingIsTrueWhenSet() = testScope.runTest {
         subject.setShouldHideOnboarding(true)
-        assertTrue(subject.userData.first().shouldHideOnboarding)
+        assertTrue(subject.userData.userData().shouldHideOnboarding)
     }
 
     @Test
@@ -59,7 +63,7 @@ class NiaPreferencesDataSourceTest {
             subject.setTopicIdFollowed("1", false)
 
             // Then: onboarding should be shown again
-            assertFalse(subject.userData.first().shouldHideOnboarding)
+            assertFalse(subject.userData.userData().shouldHideOnboarding)
         }
 
     @Test
@@ -73,17 +77,20 @@ class NiaPreferencesDataSourceTest {
             subject.setFollowedTopicIds(emptySet())
 
             // Then: onboarding should be shown again
-            assertFalse(subject.userData.first().shouldHideOnboarding)
+            assertFalse(subject.userData.userData().shouldHideOnboarding)
         }
 
     @Test
     fun shouldUseDynamicColorFalseByDefault() = testScope.runTest {
-        assertFalse(subject.userData.first().useDynamicColor)
+        assertFalse(subject.userData.userData().useDynamicColor)
     }
 
     @Test
     fun userShouldUseDynamicColorIsTrueWhenSet() = testScope.runTest {
         subject.setDynamicColorPreference(true)
-        assertTrue(subject.userData.first().useDynamicColor)
+        assertTrue(subject.userData.userData().useDynamicColor)
     }
 }
+
+private suspend fun Flow<DomainResult<UserData>>.userData(): UserData =
+    filterIsInstance<DomainResult.Success<UserData>>().first().data

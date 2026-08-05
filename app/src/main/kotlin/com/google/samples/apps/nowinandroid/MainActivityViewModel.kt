@@ -24,6 +24,7 @@ import com.google.samples.apps.nowinandroid.core.data.repository.UserDataReposit
 import com.google.samples.apps.nowinandroid.core.model.data.DarkThemeConfig
 import com.google.samples.apps.nowinandroid.core.model.data.ThemeBrand
 import com.google.samples.apps.nowinandroid.core.model.data.UserData
+import com.google.samples.apps.nowinandroid.core.common.result.DomainResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -35,8 +36,12 @@ import javax.inject.Inject
 class MainActivityViewModel @Inject constructor(
     userDataRepository: UserDataRepository,
 ) : ViewModel() {
-    val uiState: StateFlow<MainActivityUiState> = userDataRepository.userData.map {
-        Success(it)
+    val uiState: StateFlow<MainActivityUiState> = userDataRepository.userData.map { result ->
+        when (result) {
+            is DomainResult.Success -> Success(result.data)
+            is DomainResult.Error -> Loading // Or error state
+            DomainResult.Loading -> Loading
+        }
     }.stateIn(
         scope = viewModelScope,
         initialValue = Loading,

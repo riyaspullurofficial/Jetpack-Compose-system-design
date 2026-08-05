@@ -17,6 +17,7 @@
 package com.google.samples.apps.nowinandroid.core.data.repository
 
 import com.google.samples.apps.nowinandroid.core.data.model.RecentSearchQuery
+import com.google.samples.apps.nowinandroid.core.common.result.DomainResult
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -27,7 +28,7 @@ interface RecentSearchRepository {
     /**
      * Get the recent search queries up to the number of queries specified as [limit].
      */
-    fun getRecentSearchQueries(limit: Int): Flow<List<RecentSearchQuery>>
+    fun getRecentSearchQueries(limit: Int): Flow<DomainResult<List<RecentSearchQuery>>>
 
     /**
      * Insert or replace the [searchQuery] as part of the recent searches.

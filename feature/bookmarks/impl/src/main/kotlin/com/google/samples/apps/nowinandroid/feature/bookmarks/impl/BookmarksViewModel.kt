@@ -24,6 +24,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.samples.apps.nowinandroid.core.data.repository.UserDataRepository
 import com.google.samples.apps.nowinandroid.core.data.repository.UserNewsResourceRepository
+import com.google.samples.apps.nowinandroid.core.common.result.DomainResult
 import com.google.samples.apps.nowinandroid.core.domain.BulkRemoveBookmarksUseCase
 import com.google.samples.apps.nowinandroid.core.domain.GetBookmarkMementoUseCase
 import com.google.samples.apps.nowinandroid.core.domain.RestoreBookmarksUseCase
@@ -75,9 +76,14 @@ class BookmarksViewModel @Inject constructor(
 
     val feedUiState: StateFlow<NewsFeedUiState> =
         userNewsResourceRepository.observeAllBookmarked()
-            .map<List<UserNewsResource>, NewsFeedUiState>(NewsFeedUiState::Success)
+            .map<DomainResult<List<UserNewsResource>>, NewsFeedUiState> { result ->
+                when (result) {
+                    is DomainResult.Success -> NewsFeedUiState.Success(result.data)
+                    is DomainResult.Error -> NewsFeedUiState.Error
+                    DomainResult.Loading -> NewsFeedUiState.Loading
+                }
+            }
             .onStart { emit(Loading) }
-            .catch { emit(NewsFeedUiState.Error) }
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5_000),

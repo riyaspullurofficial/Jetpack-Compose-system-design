@@ -28,6 +28,7 @@ import com.google.samples.apps.nowinandroid.core.analytics.AnalyticsHelper
 import com.google.samples.apps.nowinandroid.core.data.repository.RecentSearchRepository
 import com.google.samples.apps.nowinandroid.core.data.repository.SearchContentsRepository
 import com.google.samples.apps.nowinandroid.core.data.repository.UserDataRepository
+import com.google.samples.apps.nowinandroid.core.common.result.DomainResult
 import com.google.samples.apps.nowinandroid.core.domain.GetRecentSearchQueriesUseCase
 import com.google.samples.apps.nowinandroid.core.domain.GetSearchContentsUseCase
 import com.google.samples.apps.nowinandroid.core.domain.UpdateBookmarkNoteUseCase
@@ -71,26 +72,37 @@ class SearchViewModel @Inject constructor(
 
     val searchResultUiState: StateFlow<SearchResultUiState> =
         searchContentsRepository.getSearchContentsCount()
-            .flatMapLatest { totalCount ->
-                if (totalCount < SEARCH_MIN_FTS_ENTITY_COUNT) {
-                    flowOf(SearchResultUiState.SearchNotReady)
-                } else {
-                    searchQuery.flatMapLatest { query ->
-                        if (query.trim().length < SEARCH_QUERY_MIN_LENGTH) {
-                            flowOf(SearchResultUiState.EmptyQuery)
+            .flatMapLatest { totalCountResult ->
+                when (totalCountResult) {
+                    is DomainResult.Success -> {
+                        val totalCount = totalCountResult.data
+                        if (totalCount < SEARCH_MIN_FTS_ENTITY_COUNT) {
+                            flowOf(SearchResultUiState.SearchNotReady)
                         } else {
-                            getSearchContentsUseCase(query)
-                                // Not using .asResult() here, because it emits Loading state every
-                                // time the user types a letter in the search box, which flickers the screen.
-                                .map<UserSearchResult, SearchResultUiState> { data ->
-                                    SearchResultUiState.Success(
-                                        topics = data.topics,
-                                        newsResources = data.newsResources,
-                                    )
+                            searchQuery.flatMapLatest { query ->
+                                if (query.trim().length < SEARCH_QUERY_MIN_LENGTH) {
+                                    flowOf(SearchResultUiState.EmptyQuery)
+                                } else {
+                                    getSearchContentsUseCase(query)
+                                        .map<DomainResult<UserSearchResult>, SearchResultUiState> { result ->
+                                            when (result) {
+                                                is DomainResult.Success -> SearchResultUiState.Success(
+                                                    topics = result.data.topics,
+                                                    newsResources = result.data.newsResources,
+                                                )
+
+                                                is DomainResult.Error -> SearchResultUiState.LoadFailed
+                                                DomainResult.Loading -> SearchResultUiState.Loading
+                                            }
+                                        }
+                                        .catch { emit(SearchResultUiState.LoadFailed) }
                                 }
-                                .catch { emit(SearchResultUiState.LoadFailed) }
+                            }
                         }
                     }
+
+                    is DomainResult.Error -> flowOf(SearchResultUiState.LoadFailed)
+                    DomainResult.Loading -> flowOf(SearchResultUiState.Loading)
                 }
             }.stateIn(
                 scope = viewModelScope,
@@ -100,7 +112,13 @@ class SearchViewModel @Inject constructor(
 
     val recentSearchQueriesUiState: StateFlow<RecentSearchQueriesUiState> =
         recentSearchQueriesUseCase()
-            .map(RecentSearchQueriesUiState::Success)
+            .map { result ->
+                when (result) {
+                    is DomainResult.Success -> RecentSearchQueriesUiState.Success(result.data)
+                    is DomainResult.Error -> RecentSearchQueriesUiState.LoadFailed
+                    DomainResult.Loading -> RecentSearchQueriesUiState.Loading
+                }
+            }
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5_000),

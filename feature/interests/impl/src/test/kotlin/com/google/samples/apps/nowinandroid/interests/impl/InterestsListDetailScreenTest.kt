@@ -32,6 +32,7 @@ import androidx.compose.ui.test.performClick
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import androidx.test.espresso.Espresso
+import com.google.samples.apps.nowinandroid.core.common.result.DomainResult
 import com.google.samples.apps.nowinandroid.core.data.repository.TopicsRepository
 import com.google.samples.apps.nowinandroid.core.designsystem.theme.NiaTheme
 import com.google.samples.apps.nowinandroid.core.model.data.Topic
@@ -47,6 +48,7 @@ import com.google.samples.apps.nowinandroid.uitesthiltmanifest.HiltComponentActi
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
@@ -78,7 +80,10 @@ class InterestsListDetailScreenTest {
 
     /** Convenience function for getting all topics during tests, */
     private fun getTopics(): List<Topic> = runBlocking {
-        topicsRepository.getTopics().first().sortedBy { it.name }
+        topicsRepository.getTopics()
+            .filterIsInstance<DomainResult.Success<List<Topic>>>()
+            .first().data
+            .sortedBy { it.name }
     }
 
     // The strings used for matching in these tests.

@@ -16,6 +16,7 @@
 
 package com.google.samples.apps.nowinandroid.core.data
 
+import com.google.samples.apps.nowinandroid.core.common.result.DomainResult
 import com.google.samples.apps.nowinandroid.core.data.repository.CompositeUserNewsResourceRepository
 import com.google.samples.apps.nowinandroid.core.data.repository.NewsResourceQuery
 import com.google.samples.apps.nowinandroid.core.model.data.NewsResource
@@ -24,6 +25,8 @@ import com.google.samples.apps.nowinandroid.core.model.data.mapToUserNewsResourc
 import com.google.samples.apps.nowinandroid.core.testing.repository.TestNewsRepository
 import com.google.samples.apps.nowinandroid.core.testing.repository.TestUserDataRepository
 import com.google.samples.apps.nowinandroid.core.testing.repository.emptyUserData
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.Instant
@@ -59,7 +62,7 @@ class CompositeUserNewsResourceRepositoryTest {
         // Check that the correct news resources are returned with their bookmarked state.
         assertEquals(
             sampleNewsResources.mapToUserNewsResources(userData),
-            userNewsResources.first(),
+            userNewsResources.successData(),
         )
     }
 
@@ -84,7 +87,7 @@ class CompositeUserNewsResourceRepositoryTest {
             sampleNewsResources
                 .filter { sampleTopic1 in it.topics }
                 .mapToUserNewsResources(emptyUserData),
-            userNewsResources.first(),
+            userNewsResources.successData(),
         )
     }
 
@@ -106,7 +109,7 @@ class CompositeUserNewsResourceRepositoryTest {
             sampleNewsResources
                 .filter { sampleTopic1 in it.topics }
                 .mapToUserNewsResources(userData),
-            userNewsResources.first(),
+            userNewsResources.successData(),
         )
     }
 
@@ -129,10 +132,13 @@ class CompositeUserNewsResourceRepositoryTest {
         // Check that the correct news resources are returned with their bookmarked state.
         assertEquals(
             listOf(sampleNewsResources[0], sampleNewsResources[2]).mapToUserNewsResources(userData),
-            userNewsResources.first(),
+            userNewsResources.successData(),
         )
     }
 }
+
+private suspend fun <T> Flow<DomainResult<T>>.successData(): T =
+    filterIsInstance<DomainResult.Success<T>>().first().data
 
 private val sampleTopic1 = Topic(
     id = "Topic1",

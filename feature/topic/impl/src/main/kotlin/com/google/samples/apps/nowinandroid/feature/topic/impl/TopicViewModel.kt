@@ -16,10 +16,10 @@
 
 package com.google.samples.apps.nowinandroid.feature.topic.impl
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.samples.apps.nowinandroid.core.common.result.Result
-import com.google.samples.apps.nowinandroid.core.common.result.asResult
+import com.google.samples.apps.nowinandroid.core.common.result.DomainResult
 import com.google.samples.apps.nowinandroid.core.data.repository.NewsResourceQuery
 import com.google.samples.apps.nowinandroid.core.data.repository.TopicsRepository
 import com.google.samples.apps.nowinandroid.core.data.repository.UserDataRepository
@@ -28,8 +28,8 @@ import com.google.samples.apps.nowinandroid.core.domain.UpdateBookmarkNoteUseCas
 import com.google.samples.apps.nowinandroid.core.domain.UpdateNewsResourceBookmarkUseCase
 import com.google.samples.apps.nowinandroid.core.domain.UpdateNewsResourceViewedUseCase
 import com.google.samples.apps.nowinandroid.core.model.data.FollowableTopic
-import com.google.samples.apps.nowinandroid.core.model.data.Topic
 import com.google.samples.apps.nowinandroid.core.model.data.UserNewsResource
+import com.google.samples.apps.nowinandroid.core.ui.BookmarkNoteViewModelState
 import com.google.samples.apps.nowinandroid.core.ui.NewsFeedUiState
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -42,8 +42,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import androidx.lifecycle.SavedStateHandle
-import com.google.samples.apps.nowinandroid.core.ui.BookmarkNoteViewModelState
 
 @HiltViewModel(assistedFactory = TopicViewModel.Factory::class)
 class TopicViewModel @AssistedInject constructor(
@@ -133,36 +131,23 @@ private fun topicUiState(
     userDataRepository: UserDataRepository,
     topicsRepository: TopicsRepository,
 ): Flow<TopicUiState> {
-    // Observe the followed topics, as they could change over time.
-    val followedTopicIds: Flow<Set<String>> =
-        userDataRepository.userData
-            .map { it.followedTopics }
-
-    // Observe topic information
-    val topicStream: Flow<Topic> = topicsRepository.getTopic(
-        id = topicId,
-    )
-
     return combine(
-        followedTopicIds,
-        topicStream,
+        userDataRepository.userData,
+        topicsRepository.getTopic(id = topicId),
         ::Pair,
     )
-        .asResult()
-        .map { followedTopicToTopicResult ->
-            when (followedTopicToTopicResult) {
-                is Result.Success -> {
-                    val (followedTopics, topic) = followedTopicToTopicResult.data
-                    TopicUiState.Success(
-                        followableTopic = FollowableTopic(
-                            topic = topic,
-                            isFollowed = topicId in followedTopics,
-                        ),
-                    )
-                }
-
-                is Result.Loading -> TopicUiState.Loading
-                is Result.Error -> TopicUiState.Error
+        .map { (userDataResult, topicResult) ->
+            if (userDataResult is DomainResult.Success && topicResult is DomainResult.Success) {
+                TopicUiState.Success(
+                    followableTopic = FollowableTopic(
+                        topic = topicResult.data,
+                        isFollowed = topicId in userDataResult.data.followedTopics,
+                    ),
+                )
+            } else if (userDataResult is DomainResult.Error || topicResult is DomainResult.Error) {
+                TopicUiState.Error
+            } else {
+                TopicUiState.Loading
             }
         }
 }
@@ -172,22 +157,18 @@ private fun newsUiState(
     userNewsResourceRepository: UserNewsResourceRepository,
     userDataRepository: UserDataRepository,
 ): Flow<NewsFeedUiState> {
-    // Observe news
-    val newsStream: Flow<List<UserNewsResource>> = userNewsResourceRepository.observeAll(
-        NewsResourceQuery(filterTopicIds = setOf(element = topicId)),
+    return combine(
+        userNewsResourceRepository.observeAll(NewsResourceQuery(filterTopicIds = setOf(topicId))),
+        userDataRepository.userData,
+        ::Pair,
     )
-
-    // Observe bookmarks
-    val bookmark: Flow<Set<String>> = userDataRepository.userData
-        .map { it.bookmarkedNewsResources }
-
-    return combine(newsStream, bookmark, ::Pair)
-        .asResult()
-        .map { newsToBookmarksResult ->
-            when (newsToBookmarksResult) {
-                is Result.Success -> NewsFeedUiState.Success(newsToBookmarksResult.data.first)
-                is Result.Loading -> NewsFeedUiState.Loading
-                is Result.Error -> NewsFeedUiState.Error
+        .map { (newsResourcesResult, userDataResult) ->
+            if (newsResourcesResult is DomainResult.Success && userDataResult is DomainResult.Success) {
+                NewsFeedUiState.Success(newsResourcesResult.data)
+            } else if (newsResourcesResult is DomainResult.Error || userDataResult is DomainResult.Error) {
+                NewsFeedUiState.Error
+            } else {
+                NewsFeedUiState.Loading
             }
         }
 }

@@ -28,6 +28,8 @@ import com.google.samples.apps.nowinandroid.core.database.model.TopicEntity
 import com.google.samples.apps.nowinandroid.core.database.model.asExternalModel
 import com.google.samples.apps.nowinandroid.core.datastore.ChangeListVersions
 import com.google.samples.apps.nowinandroid.core.datastore.NiaPreferencesDataSource
+import com.google.samples.apps.nowinandroid.core.common.result.DomainResult
+import com.google.samples.apps.nowinandroid.core.common.result.asDomainResult
 import com.google.samples.apps.nowinandroid.core.model.data.NewsResource
 import com.google.samples.apps.nowinandroid.core.network.NiaNetworkDataSource
 import com.google.samples.apps.nowinandroid.core.network.model.NetworkNewsResource
@@ -55,13 +57,14 @@ internal class OfflineFirstNewsRepository @Inject constructor(
 
     override fun getNewsResources(
         query: NewsResourceQuery,
-    ): Flow<List<NewsResource>> = newsResourceDao.getNewsResources(
+    ): Flow<DomainResult<List<NewsResource>>> = newsResourceDao.getNewsResources(
         useFilterTopicIds = query.filterTopicIds != null,
         filterTopicIds = query.filterTopicIds ?: emptySet(),
         useFilterNewsIds = query.filterNewsIds != null,
         filterNewsIds = query.filterNewsIds ?: emptySet(),
     )
         .map { it.map(PopulatedNewsResource::asExternalModel) }
+        .asDomainResult()
 
     override suspend fun syncWith(synchronizer: Synchronizer): Boolean {
         var isFirstSync = false
@@ -76,7 +79,8 @@ internal class OfflineFirstNewsRepository @Inject constructor(
             },
             modelDeleter = newsResourceDao::deleteNewsResources,
             modelUpdater = { changedIds ->
-                val userData = niaPreferencesDataSource.userData.first()
+                val userDataResult = niaPreferencesDataSource.userData.first { it is DomainResult.Success }
+                val userData = (userDataResult as DomainResult.Success).data
                 val hasOnboarded = userData.shouldHideOnboarding
                 val followedTopicIds = userData.followedTopics
 

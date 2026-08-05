@@ -21,6 +21,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.samples.apps.nowinandroid.core.data.repository.UserDataRepository
 import com.google.samples.apps.nowinandroid.core.model.data.DarkThemeConfig
 import com.google.samples.apps.nowinandroid.core.model.data.ThemeBrand
+import com.google.samples.apps.nowinandroid.core.common.result.DomainResult
 import com.google.samples.apps.nowinandroid.feature.settings.impl.SettingsUiState.Loading
 import com.google.samples.apps.nowinandroid.feature.settings.impl.SettingsUiState.Success
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -38,14 +39,22 @@ class SettingsViewModel @Inject constructor(
 ) : ViewModel() {
     val settingsUiState: StateFlow<SettingsUiState> =
         userDataRepository.userData
-            .map { userData ->
-                Success(
-                    settings = UserEditableSettings(
-                        brand = userData.themeBrand,
-                        useDynamicColor = userData.useDynamicColor,
-                        darkThemeConfig = userData.darkThemeConfig,
-                    ),
-                )
+            .map { userDataResult ->
+                when (userDataResult) {
+                    is DomainResult.Success -> {
+                        val userData = userDataResult.data
+                        Success(
+                            settings = UserEditableSettings(
+                                brand = userData.themeBrand,
+                                useDynamicColor = userData.useDynamicColor,
+                                darkThemeConfig = userData.darkThemeConfig,
+                            ),
+                        )
+                    }
+
+                    is DomainResult.Error -> Loading // Or a new error state
+                    DomainResult.Loading -> Loading
+                }
             }
             .stateIn(
                 scope = viewModelScope,

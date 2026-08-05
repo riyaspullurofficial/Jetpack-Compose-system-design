@@ -21,6 +21,7 @@ import com.google.samples.apps.nowinandroid.core.data.repository.UserDataReposit
 import com.google.samples.apps.nowinandroid.core.domain.TopicSortField.NAME
 import com.google.samples.apps.nowinandroid.core.domain.TopicSortField.NONE
 import com.google.samples.apps.nowinandroid.core.model.data.FollowableTopic
+import com.google.samples.apps.nowinandroid.core.common.result.DomainResult
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import javax.inject.Inject
@@ -37,20 +38,30 @@ class GetFollowableTopicsUseCase @Inject constructor(
      *
      * @param sortBy - the field used to sort the topics. Default NONE = no sorting.
      */
-    operator fun invoke(sortBy: TopicSortField = NONE): Flow<List<FollowableTopic>> = combine(
+    operator fun invoke(sortBy: TopicSortField = NONE): Flow<DomainResult<List<FollowableTopic>>> = combine(
         userDataRepository.userData,
         topicsRepository.getTopics(),
-    ) { userData, topics ->
-        val followedTopics = topics
-            .map { topic ->
+    ) { userDataResult, topicsResult ->
+        if (userDataResult is DomainResult.Success && topicsResult is DomainResult.Success) {
+            val userData = userDataResult.data
+            val followedTopics = topicsResult.data.map { topic ->
                 FollowableTopic(
                     topic = topic,
                     isFollowed = topic.id in userData.followedTopics,
                 )
             }
-        when (sortBy) {
-            NAME -> followedTopics.sortedBy { it.topic.name }
-            else -> followedTopics
+            DomainResult.Success(
+                when (sortBy) {
+                    NAME -> followedTopics.sortedBy { it.topic.name }
+                    else -> followedTopics
+                },
+            )
+        } else if (userDataResult is DomainResult.Error) {
+            DomainResult.Error(userDataResult.exception, userDataResult.message)
+        } else if (topicsResult is DomainResult.Error) {
+            DomainResult.Error(topicsResult.exception, topicsResult.message)
+        } else {
+            DomainResult.Loading
         }
     }
 }

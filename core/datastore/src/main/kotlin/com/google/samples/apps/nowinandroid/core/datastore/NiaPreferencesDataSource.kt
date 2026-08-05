@@ -21,6 +21,9 @@ import androidx.datastore.core.DataStore
 import com.google.samples.apps.nowinandroid.core.model.data.DarkThemeConfig
 import com.google.samples.apps.nowinandroid.core.model.data.ThemeBrand
 import com.google.samples.apps.nowinandroid.core.model.data.UserData
+import com.google.samples.apps.nowinandroid.core.common.result.DomainResult
+import com.google.samples.apps.nowinandroid.core.common.result.asDomainResult
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import java.io.IOException
@@ -29,7 +32,7 @@ import javax.inject.Inject
 class NiaPreferencesDataSource @Inject constructor(
     private val userPreferences: DataStore<UserPreferences>,
 ) {
-    val userData = userPreferences.data
+    val userData: Flow<DomainResult<UserData>> = userPreferences.data
         .map {
             UserData(
                 bookmarkedNewsResources = it.bookmarkedNewsResourceIdsMap.keys,
@@ -59,6 +62,7 @@ class NiaPreferencesDataSource @Inject constructor(
                 shouldHideOnboarding = it.shouldHideOnboarding,
             )
         }
+        .asDomainResult()
 
     suspend fun setFollowedTopicIds(topicIds: Set<String>) {
         try {

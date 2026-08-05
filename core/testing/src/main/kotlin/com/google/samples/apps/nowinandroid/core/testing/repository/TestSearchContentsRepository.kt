@@ -16,6 +16,8 @@
 
 package com.google.samples.apps.nowinandroid.core.testing.repository
 
+import com.google.samples.apps.nowinandroid.core.common.result.DomainResult
+import com.google.samples.apps.nowinandroid.core.common.result.asDomainResult
 import com.google.samples.apps.nowinandroid.core.data.repository.SearchContentsRepository
 import com.google.samples.apps.nowinandroid.core.model.data.NewsResource
 import com.google.samples.apps.nowinandroid.core.model.data.SearchResult
@@ -33,7 +35,7 @@ class TestSearchContentsRepository : SearchContentsRepository {
 
     override suspend fun populateFtsData() = Unit
 
-    override fun searchContents(searchQuery: String): Flow<SearchResult> =
+    override fun searchContents(searchQuery: String): Flow<DomainResult<SearchResult>> =
         combine(cachedTopics, cachedNewsResources) { topics, news ->
             SearchResult(
                 topics = topics.filter {
@@ -43,7 +45,7 @@ class TestSearchContentsRepository : SearchContentsRepository {
                     searchQuery in it.content || searchQuery in it.title
                 },
             )
-        }
+        }.asDomainResult()
 
     override fun getSearchContentsCount(): Flow<Int> = combine(cachedTopics, cachedNewsResources) { topics, news -> topics.size + news.size }
 

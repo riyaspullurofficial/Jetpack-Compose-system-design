@@ -17,12 +17,15 @@
 package com.google.samples.apps.nowinandroid.core.data.repository
 
 import com.google.samples.apps.nowinandroid.core.analytics.NoOpAnalyticsHelper
+import com.google.samples.apps.nowinandroid.core.common.result.DomainResult
 import com.google.samples.apps.nowinandroid.core.datastore.NiaPreferencesDataSource
 import com.google.samples.apps.nowinandroid.core.datastore.UserPreferences
 import com.google.samples.apps.nowinandroid.core.datastore.test.InMemoryDataStore
 import com.google.samples.apps.nowinandroid.core.model.data.DarkThemeConfig
 import com.google.samples.apps.nowinandroid.core.model.data.ThemeBrand
 import com.google.samples.apps.nowinandroid.core.model.data.UserData
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.TestScope
@@ -68,7 +71,7 @@ class OfflineFirstUserDataRepositoryTest {
                     useDynamicColor = false,
                     shouldHideOnboarding = false,
                 ),
-                subject.userData.first(),
+                subject.userData.successData(),
             )
         }
 
@@ -80,8 +83,8 @@ class OfflineFirstUserDataRepositoryTest {
             assertEquals(
                 setOf("0"),
                 subject.userData
-                    .map { it.followedTopics }
-                    .first(),
+                    .successData()
+                    .followedTopics,
             )
 
             subject.setTopicIdFollowed(followedTopicId = "1", followed = true)
@@ -89,17 +92,17 @@ class OfflineFirstUserDataRepositoryTest {
             assertEquals(
                 setOf("0", "1"),
                 subject.userData
-                    .map { it.followedTopics }
-                    .first(),
+                    .successData()
+                    .followedTopics,
             )
 
             assertEquals(
                 niaPreferencesDataSource.userData
-                    .map { it.followedTopics }
-                    .first(),
+                    .successData()
+                    .followedTopics,
                 subject.userData
-                    .map { it.followedTopics }
-                    .first(),
+                    .successData()
+                    .followedTopics,
             )
         }
 
@@ -111,17 +114,17 @@ class OfflineFirstUserDataRepositoryTest {
             assertEquals(
                 setOf("1", "2"),
                 subject.userData
-                    .map { it.followedTopics }
-                    .first(),
+                    .successData()
+                    .followedTopics,
             )
 
             assertEquals(
                 niaPreferencesDataSource.userData
-                    .map { it.followedTopics }
-                    .first(),
+                    .successData()
+                    .followedTopics,
                 subject.userData
-                    .map { it.followedTopics }
-                    .first(),
+                    .successData()
+                    .followedTopics,
             )
         }
 
@@ -133,8 +136,8 @@ class OfflineFirstUserDataRepositoryTest {
             assertEquals(
                 setOf("0"),
                 subject.userData
-                    .map { it.bookmarkedNewsResources }
-                    .first(),
+                    .successData()
+                    .bookmarkedNewsResources,
             )
 
             subject.setNewsResourceBookmarked(newsResourceId = "1", bookmarked = true)
@@ -142,17 +145,17 @@ class OfflineFirstUserDataRepositoryTest {
             assertEquals(
                 setOf("0", "1"),
                 subject.userData
-                    .map { it.bookmarkedNewsResources }
-                    .first(),
+                    .successData()
+                    .bookmarkedNewsResources,
             )
 
             assertEquals(
                 niaPreferencesDataSource.userData
-                    .map { it.bookmarkedNewsResources }
-                    .first(),
+                    .successData()
+                    .bookmarkedNewsResources,
                 subject.userData
-                    .map { it.bookmarkedNewsResources }
-                    .first(),
+                    .successData()
+                    .bookmarkedNewsResources,
             )
         }
 
@@ -164,8 +167,8 @@ class OfflineFirstUserDataRepositoryTest {
             assertEquals(
                 setOf("0"),
                 subject.userData
-                    .map { it.viewedNewsResources }
-                    .first(),
+                    .successData()
+                    .viewedNewsResources,
             )
 
             subject.setNewsResourceViewed(newsResourceId = "1", viewed = true)
@@ -173,17 +176,17 @@ class OfflineFirstUserDataRepositoryTest {
             assertEquals(
                 setOf("0", "1"),
                 subject.userData
-                    .map { it.viewedNewsResources }
-                    .first(),
+                    .successData()
+                    .viewedNewsResources,
             )
 
             assertEquals(
                 niaPreferencesDataSource.userData
-                    .map { it.viewedNewsResources }
-                    .first(),
+                    .successData()
+                    .viewedNewsResources,
                 subject.userData
-                    .map { it.viewedNewsResources }
-                    .first(),
+                    .successData()
+                    .viewedNewsResources,
             )
         }
 
@@ -195,15 +198,15 @@ class OfflineFirstUserDataRepositoryTest {
             assertEquals(
                 ThemeBrand.ANDROID,
                 subject.userData
-                    .map { it.themeBrand }
-                    .first(),
+                    .successData()
+                    .themeBrand,
             )
             assertEquals(
                 ThemeBrand.ANDROID,
                 niaPreferencesDataSource
                     .userData
-                    .map { it.themeBrand }
-                    .first(),
+                    .successData()
+                    .themeBrand,
             )
         }
 
@@ -215,15 +218,15 @@ class OfflineFirstUserDataRepositoryTest {
             assertEquals(
                 true,
                 subject.userData
-                    .map { it.useDynamicColor }
-                    .first(),
+                    .successData()
+                    .useDynamicColor,
             )
             assertEquals(
                 true,
                 niaPreferencesDataSource
                     .userData
-                    .map { it.useDynamicColor }
-                    .first(),
+                    .successData()
+                    .useDynamicColor,
             )
         }
 
@@ -235,15 +238,15 @@ class OfflineFirstUserDataRepositoryTest {
             assertEquals(
                 DarkThemeConfig.DARK,
                 subject.userData
-                    .map { it.darkThemeConfig }
-                    .first(),
+                    .successData()
+                    .darkThemeConfig,
             )
             assertEquals(
                 DarkThemeConfig.DARK,
                 niaPreferencesDataSource
                     .userData
-                    .map { it.darkThemeConfig }
-                    .first(),
+                    .successData()
+                    .darkThemeConfig,
             )
         }
 
@@ -252,9 +255,12 @@ class OfflineFirstUserDataRepositoryTest {
         testScope.runTest {
             subject.setFollowedTopicIds(setOf("1"))
             subject.setShouldHideOnboarding(true)
-            assertTrue(subject.userData.first().shouldHideOnboarding)
+            assertTrue(subject.userData.successData().shouldHideOnboarding)
 
             subject.setFollowedTopicIds(emptySet())
-            assertFalse(subject.userData.first().shouldHideOnboarding)
+            assertFalse(subject.userData.successData().shouldHideOnboarding)
         }
 }
+
+private suspend fun <T> Flow<DomainResult<T>>.successData(): T =
+    filterIsInstance<DomainResult.Success<T>>().first().data

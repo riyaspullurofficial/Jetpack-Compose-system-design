@@ -36,13 +36,16 @@ import androidx.test.espresso.Espresso
 import androidx.test.espresso.NoActivityResumedException
 import com.google.samples.apps.nowinandroid.MainActivity
 import com.google.samples.apps.nowinandroid.R
+import com.google.samples.apps.nowinandroid.core.common.result.DomainResult
 import com.google.samples.apps.nowinandroid.core.data.repository.NewsRepository
 import com.google.samples.apps.nowinandroid.core.data.repository.TopicsRepository
+import com.google.samples.apps.nowinandroid.core.model.data.NewsResource
 import com.google.samples.apps.nowinandroid.core.model.data.Topic
 import com.google.samples.apps.nowinandroid.core.rules.GrantPostNotificationsPermissionRule
 import com.google.samples.apps.nowinandroid.feature.interests.impl.LIST_PANE_TEST_TAG
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
@@ -265,7 +268,10 @@ class NavigationTest {
 
             // Select the last topic
             val topic = runBlocking {
-                topicsRepository.getTopics().first().sortedBy(Topic::name).last()
+                topicsRepository.getTopics()
+                    .filterIsInstance<DomainResult.Success<List<Topic>>>()
+                    .first().data
+                    .sortedBy(Topic::name).last()
             }
             onNodeWithTag(LIST_PANE_TEST_TAG).performScrollToNode(hasText(topic.name))
             onNodeWithText(topic.name).performClick()
@@ -288,7 +294,10 @@ class NavigationTest {
         composeTestRule.apply {
             // Get the first news resource
             val newsResource = runBlocking {
-                newsRepository.getNewsResources().first().first()
+                newsRepository.getNewsResources()
+                    .filterIsInstance<DomainResult.Success<List<NewsResource>>>()
+                    .first().data
+                    .first()
             }
 
             // Get its first topic and follow it

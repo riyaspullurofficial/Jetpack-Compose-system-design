@@ -18,6 +18,8 @@ package com.google.samples.apps.nowinandroid.core.data.test.repository
 
 import com.google.samples.apps.nowinandroid.core.common.network.Dispatcher
 import com.google.samples.apps.nowinandroid.core.common.network.NiaDispatchers.IO
+import com.google.samples.apps.nowinandroid.core.common.result.DomainResult
+import com.google.samples.apps.nowinandroid.core.common.result.asDomainResult
 import com.google.samples.apps.nowinandroid.core.data.Synchronizer
 import com.google.samples.apps.nowinandroid.core.data.repository.TopicsRepository
 import com.google.samples.apps.nowinandroid.core.model.data.Topic
@@ -40,7 +42,7 @@ internal class FakeTopicsRepository @Inject constructor(
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
     private val datasource: DemoNiaNetworkDataSource,
 ) : TopicsRepository {
-    override fun getTopics(): Flow<List<Topic>> = flow {
+    override fun getTopics(): Flow<DomainResult<List<Topic>>> = flow {
         emit(
             datasource.getTopics().map {
                 Topic(
@@ -53,10 +55,24 @@ internal class FakeTopicsRepository @Inject constructor(
                 )
             },
         )
-    }.flowOn(ioDispatcher)
+    }.asDomainResult()
+        .flowOn(ioDispatcher)
 
-    override fun getTopic(id: String): Flow<Topic> = getTopics()
-        .map { it.first { topic -> topic.id == id } }
+    override fun getTopic(id: String): Flow<DomainResult<Topic>> = flow {
+        emit(
+            datasource.getTopics().map {
+                Topic(
+                    id = it.id,
+                    name = it.name,
+                    shortDescription = it.shortDescription,
+                    longDescription = it.longDescription,
+                    url = it.url,
+                    imageUrl = it.imageUrl,
+                )
+            }.first { topic -> topic.id == id },
+        )
+    }.asDomainResult()
+        .flowOn(ioDispatcher)
 
     override suspend fun syncWith(synchronizer: Synchronizer) = true
 }

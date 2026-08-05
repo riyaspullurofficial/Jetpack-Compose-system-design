@@ -26,6 +26,7 @@ import com.google.samples.apps.nowinandroid.core.data.repository.NewsResourceQue
 import com.google.samples.apps.nowinandroid.core.data.repository.UserDataRepository
 import com.google.samples.apps.nowinandroid.core.data.repository.UserNewsResourceRepository
 import com.google.samples.apps.nowinandroid.core.data.util.SyncManager
+import com.google.samples.apps.nowinandroid.core.common.result.DomainResult
 import com.google.samples.apps.nowinandroid.core.domain.GetFollowableTopicsUseCase
 import com.google.samples.apps.nowinandroid.core.domain.UpdateBookmarkNoteUseCase
 import com.google.samples.apps.nowinandroid.core.domain.UpdateNewsResourceBookmarkUseCase
@@ -40,7 +41,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -72,7 +72,13 @@ class ForYouViewModel @Inject constructor(
     )
 
     private val shouldShowOnboarding: Flow<Boolean> =
-        userDataRepository.userData.map { !it.shouldHideOnboarding }
+        userDataRepository.userData.map { result ->
+            if (result is DomainResult.Success) {
+                !result.data.shouldHideOnboarding
+            } else {
+                false
+            }
+        }
 
     val deepLinkedNewsResource = savedStateHandle.getStateFlow<String?>(
         key = DEEP_LINK_NEWS_RESOURCE_ID_KEY,
@@ -80,7 +86,7 @@ class ForYouViewModel @Inject constructor(
     )
         .flatMapLatest { newsResourceId ->
             if (newsResourceId == null) {
-                flowOf(emptyList())
+                flowOf(DomainResult.Success(emptyList()))
             } else {
                 userNewsResourceRepository.observeAll(
                     NewsResourceQuery(
@@ -89,7 +95,13 @@ class ForYouViewModel @Inject constructor(
                 )
             }
         }
-        .map { it.firstOrNull() }
+        .map { result ->
+            if (result is DomainResult.Success) {
+                result.data.firstOrNull()
+            } else {
+                null
+            }
+        }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
@@ -105,8 +117,13 @@ class ForYouViewModel @Inject constructor(
 
     val feedState: StateFlow<NewsFeedUiState> =
         userNewsResourceRepository.observeAllForFollowedTopics()
-            .map<List<UserNewsResource>, NewsFeedUiState>(NewsFeedUiState::Success)
-            .catch { emit(NewsFeedUiState.Error) }
+            .map<DomainResult<List<UserNewsResource>>, NewsFeedUiState> { result ->
+                when (result) {
+                    is DomainResult.Success -> NewsFeedUiState.Success(result.data)
+                    is DomainResult.Error -> NewsFeedUiState.Error
+                    DomainResult.Loading -> NewsFeedUiState.Loading
+                }
+            }
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5_000),
@@ -117,9 +134,13 @@ class ForYouViewModel @Inject constructor(
         combine(
             shouldShowOnboarding,
             getFollowableTopics(),
-        ) { shouldShowOnboarding, topics ->
+        ) { shouldShowOnboarding, topicsResult ->
             if (shouldShowOnboarding) {
-                OnboardingUiState.Shown(topics = topics)
+                when (topicsResult) {
+                    is DomainResult.Success -> OnboardingUiState.Shown(topics = topicsResult.data)
+                    is DomainResult.Error -> OnboardingUiState.LoadFailed
+                    DomainResult.Loading -> OnboardingUiState.Loading
+                }
             } else {
                 OnboardingUiState.NotShown
             }
@@ -179,7 +200,7 @@ class ForYouViewModel @Inject constructor(
 
     fun dismissOnboarding() {
         viewModelScope.launch {
-            userDataRepository.setShouldHideOnboarding(true)
+            userDataRepository.setShouldHideOnboarding(shouldHideOnboarding = true)
         }
     }
 }

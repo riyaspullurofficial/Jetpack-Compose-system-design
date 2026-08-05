@@ -16,6 +16,8 @@
 
 package com.google.samples.apps.nowinandroid.core.testing.repository
 
+import com.google.samples.apps.nowinandroid.core.common.result.DomainResult
+import com.google.samples.apps.nowinandroid.core.common.result.asDomainResult
 import com.google.samples.apps.nowinandroid.core.data.Synchronizer
 import com.google.samples.apps.nowinandroid.core.data.repository.NewsRepository
 import com.google.samples.apps.nowinandroid.core.data.repository.NewsResourceQuery
@@ -34,7 +36,7 @@ class TestNewsRepository : NewsRepository {
     private val newsResourcesFlow: MutableSharedFlow<List<NewsResource>> =
         MutableSharedFlow(replay = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
-    override fun getNewsResources(query: NewsResourceQuery): Flow<List<NewsResource>> =
+    override fun getNewsResources(query: NewsResourceQuery): Flow<DomainResult<List<NewsResource>>> =
         newsResourcesFlow.map { newsResources ->
             var result = newsResources
             query.filterTopicIds?.let { filterTopicIds ->
@@ -46,7 +48,7 @@ class TestNewsRepository : NewsRepository {
                 result = newsResources.filter { it.id in filterNewsIds }
             }
             result
-        }
+        }.asDomainResult()
 
     /**
      * A test-only API to allow controlling the list of news resources from tests.

@@ -18,6 +18,8 @@ package com.google.samples.apps.nowinandroid.core.data.test.repository
 
 import com.google.samples.apps.nowinandroid.core.common.network.Dispatcher
 import com.google.samples.apps.nowinandroid.core.common.network.NiaDispatchers.IO
+import com.google.samples.apps.nowinandroid.core.common.result.DomainResult
+import com.google.samples.apps.nowinandroid.core.common.result.asDomainResult
 import com.google.samples.apps.nowinandroid.core.data.Synchronizer
 import com.google.samples.apps.nowinandroid.core.data.model.asExternalModel
 import com.google.samples.apps.nowinandroid.core.data.repository.NewsRepository
@@ -43,7 +45,7 @@ class FakeNewsRepository @Inject constructor(
 
     override fun getNewsResources(
         query: NewsResourceQuery,
-    ): Flow<List<NewsResource>> =
+    ): Flow<DomainResult<List<NewsResource>>> =
         flow {
             val newsResources = datasource.getNewsResources()
             val topics = datasource.getTopics()
@@ -65,7 +67,8 @@ class FakeNewsRepository @Inject constructor(
                     }
                     .map { it.asExternalModel(topics) },
             )
-        }.flowOn(ioDispatcher)
+        }.asDomainResult()
+            .flowOn(ioDispatcher)
 
     override suspend fun syncWith(synchronizer: Synchronizer) = true
 }

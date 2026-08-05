@@ -22,6 +22,7 @@ import com.google.samples.apps.nowinandroid.core.datastore.NiaPreferencesDataSou
 import com.google.samples.apps.nowinandroid.core.model.data.DarkThemeConfig
 import com.google.samples.apps.nowinandroid.core.model.data.ThemeBrand
 import com.google.samples.apps.nowinandroid.core.model.data.UserData
+import com.google.samples.apps.nowinandroid.core.common.result.DomainResult
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
@@ -30,7 +31,7 @@ internal class OfflineFirstUserDataRepository @Inject constructor(
     private val analyticsHelper: AnalyticsHelper,
 ) : UserDataRepository {
 
-    override val userData: Flow<UserData> =
+    override val userData: Flow<DomainResult<UserData>> =
         niaPreferencesDataSource.userData
 
     @VisibleForTesting

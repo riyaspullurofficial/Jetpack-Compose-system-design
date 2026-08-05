@@ -16,6 +16,8 @@
 
 package com.google.samples.apps.nowinandroid.core.testing.repository
 
+import com.google.samples.apps.nowinandroid.core.common.result.DomainResult
+import com.google.samples.apps.nowinandroid.core.common.result.asDomainResult
 import com.google.samples.apps.nowinandroid.core.data.repository.UserDataRepository
 import com.google.samples.apps.nowinandroid.core.model.data.DarkThemeConfig
 import com.google.samples.apps.nowinandroid.core.model.data.ThemeBrand
@@ -44,7 +46,7 @@ class TestUserDataRepository : UserDataRepository {
 
     private val currentUserData get() = _userData.replayCache.firstOrNull() ?: emptyUserData
 
-    override val userData: Flow<UserData> = _userData.filterNotNull()
+    override val userData: Flow<DomainResult<UserData>> = _userData.filterNotNull().asDomainResult()
 
     override suspend fun setFollowedTopicIds(followedTopicIds: Set<String>) {
         _userData.tryEmit(currentUserData.copy(followedTopics = followedTopicIds))

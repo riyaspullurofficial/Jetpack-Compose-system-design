@@ -19,6 +19,7 @@ package com.google.samples.apps.nowinandroid.core.data.repository
 import com.google.samples.apps.nowinandroid.core.model.data.DarkThemeConfig
 import com.google.samples.apps.nowinandroid.core.model.data.ThemeBrand
 import com.google.samples.apps.nowinandroid.core.model.data.UserData
+import com.google.samples.apps.nowinandroid.core.common.result.DomainResult
 import kotlinx.coroutines.flow.Flow
 
 interface UserDataRepository {
@@ -26,7 +27,7 @@ interface UserDataRepository {
     /**
      * Stream of [UserData]
      */
-    val userData: Flow<UserData>
+    val userData: Flow<DomainResult<UserData>>
 
     /**
      * Sets the user's currently followed topics

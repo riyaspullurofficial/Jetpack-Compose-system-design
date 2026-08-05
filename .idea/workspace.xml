@@ -9,7 +9,54 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="667e5750-e37a-487a-a71d-83425b6f2a95" name="Changes" comment="task: fourth phase" />
+    <list default="true" id="667e5750-e37a-487a-a71d-83425b6f2a95" name="Changes" comment="task: sixth phase - component naming">
+      <change afterPath="$PROJECT_DIR$/core/common/src/main/kotlin/com/google/samples/apps/nowinandroid/core/common/result/DomainResult.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/androidTest/kotlin/com/google/samples/apps/nowinandroid/ui/NavigationTest.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/androidTest/kotlin/com/google/samples/apps/nowinandroid/ui/NavigationTest.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/kotlin/com/google/samples/apps/nowinandroid/MainActivityViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/kotlin/com/google/samples/apps/nowinandroid/MainActivityViewModel.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/data-test/src/main/kotlin/com/google/samples/apps/nowinandroid/core/data/test/repository/FakeNewsRepository.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/data-test/src/main/kotlin/com/google/samples/apps/nowinandroid/core/data/test/repository/FakeNewsRepository.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/data-test/src/main/kotlin/com/google/samples/apps/nowinandroid/core/data/test/repository/FakeRecentSearchRepository.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/data-test/src/main/kotlin/com/google/samples/apps/nowinandroid/core/data/test/repository/FakeRecentSearchRepository.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/data-test/src/main/kotlin/com/google/samples/apps/nowinandroid/core/data/test/repository/FakeSearchContentsRepository.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/data-test/src/main/kotlin/com/google/samples/apps/nowinandroid/core/data/test/repository/FakeSearchContentsRepository.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/data-test/src/main/kotlin/com/google/samples/apps/nowinandroid/core/data/test/repository/FakeTopicsRepository.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/data-test/src/main/kotlin/com/google/samples/apps/nowinandroid/core/data/test/repository/FakeTopicsRepository.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/data-test/src/main/kotlin/com/google/samples/apps/nowinandroid/core/data/test/repository/FakeUserDataRepository.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/data-test/src/main/kotlin/com/google/samples/apps/nowinandroid/core/data/test/repository/FakeUserDataRepository.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/data/src/main/kotlin/com/google/samples/apps/nowinandroid/core/data/repository/CompositeUserNewsResourceRepository.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/data/src/main/kotlin/com/google/samples/apps/nowinandroid/core/data/repository/CompositeUserNewsResourceRepository.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/data/src/main/kotlin/com/google/samples/apps/nowinandroid/core/data/repository/DefaultRecentSearchRepository.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/data/src/main/kotlin/com/google/samples/apps/nowinandroid/core/data/repository/DefaultRecentSearchRepository.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/data/src/main/kotlin/com/google/samples/apps/nowinandroid/core/data/repository/DefaultSearchContentsRepository.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/data/src/main/kotlin/com/google/samples/apps/nowinandroid/core/data/repository/DefaultSearchContentsRepository.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/data/src/main/kotlin/com/google/samples/apps/nowinandroid/core/data/repository/NewsRepository.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/data/src/main/kotlin/com/google/samples/apps/nowinandroid/core/data/repository/NewsRepository.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/data/src/main/kotlin/com/google/samples/apps/nowinandroid/core/data/repository/OfflineFirstNewsRepository.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/data/src/main/kotlin/com/google/samples/apps/nowinandroid/core/data/repository/OfflineFirstNewsRepository.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/data/src/main/kotlin/com/google/samples/apps/nowinandroid/core/data/repository/OfflineFirstTopicsRepository.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/data/src/main/kotlin/com/google/samples/apps/nowinandroid/core/data/repository/OfflineFirstTopicsRepository.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/data/src/main/kotlin/com/google/samples/apps/nowinandroid/core/data/repository/OfflineFirstUserDataRepository.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/data/src/main/kotlin/com/google/samples/apps/nowinandroid/core/data/repository/OfflineFirstUserDataRepository.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/data/src/main/kotlin/com/google/samples/apps/nowinandroid/core/data/repository/RecentSearchRepository.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/data/src/main/kotlin/com/google/samples/apps/nowinandroid/core/data/repository/RecentSearchRepository.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/data/src/main/kotlin/com/google/samples/apps/nowinandroid/core/data/repository/SearchContentsRepository.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/data/src/main/kotlin/com/google/samples/apps/nowinandroid/core/data/repository/SearchContentsRepository.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/data/src/main/kotlin/com/google/samples/apps/nowinandroid/core/data/repository/TopicsRepository.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/data/src/main/kotlin/com/google/samples/apps/nowinandroid/core/data/repository/TopicsRepository.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/data/src/main/kotlin/com/google/samples/apps/nowinandroid/core/data/repository/UserDataRepository.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/data/src/main/kotlin/com/google/samples/apps/nowinandroid/core/data/repository/UserDataRepository.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/data/src/main/kotlin/com/google/samples/apps/nowinandroid/core/data/repository/UserNewsResourceRepository.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/data/src/main/kotlin/com/google/samples/apps/nowinandroid/core/data/repository/UserNewsResourceRepository.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/data/src/test/kotlin/com/google/samples/apps/nowinandroid/core/data/CompositeUserNewsResourceRepositoryTest.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/data/src/test/kotlin/com/google/samples/apps/nowinandroid/core/data/CompositeUserNewsResourceRepositoryTest.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/data/src/test/kotlin/com/google/samples/apps/nowinandroid/core/data/repository/OfflineFirstNewsRepositoryTest.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/data/src/test/kotlin/com/google/samples/apps/nowinandroid/core/data/repository/OfflineFirstNewsRepositoryTest.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/data/src/test/kotlin/com/google/samples/apps/nowinandroid/core/data/repository/OfflineFirstTopicsRepositoryTest.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/data/src/test/kotlin/com/google/samples/apps/nowinandroid/core/data/repository/OfflineFirstTopicsRepositoryTest.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/data/src/test/kotlin/com/google/samples/apps/nowinandroid/core/data/repository/OfflineFirstUserDataRepositoryTest.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/data/src/test/kotlin/com/google/samples/apps/nowinandroid/core/data/repository/OfflineFirstUserDataRepositoryTest.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/datastore/src/main/kotlin/com/google/samples/apps/nowinandroid/core/datastore/NiaPreferencesDataSource.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/datastore/src/main/kotlin/com/google/samples/apps/nowinandroid/core/datastore/NiaPreferencesDataSource.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/datastore/src/test/kotlin/com/google/samples/apps/nowinandroid/core/datastore/NiaPreferencesDataSourceTest.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/datastore/src/test/kotlin/com/google/samples/apps/nowinandroid/core/datastore/NiaPreferencesDataSourceTest.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/domain/src/main/kotlin/com/google/samples/apps/nowinandroid/core/domain/GetBookmarkMementoUseCase.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/domain/src/main/kotlin/com/google/samples/apps/nowinandroid/core/domain/GetBookmarkMementoUseCase.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/domain/src/main/kotlin/com/google/samples/apps/nowinandroid/core/domain/GetFollowableTopicsUseCase.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/domain/src/main/kotlin/com/google/samples/apps/nowinandroid/core/domain/GetFollowableTopicsUseCase.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/domain/src/main/kotlin/com/google/samples/apps/nowinandroid/core/domain/GetRecentSearchQueriesUseCase.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/domain/src/main/kotlin/com/google/samples/apps/nowinandroid/core/domain/GetRecentSearchQueriesUseCase.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/domain/src/main/kotlin/com/google/samples/apps/nowinandroid/core/domain/GetSearchContentsUseCase.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/domain/src/main/kotlin/com/google/samples/apps/nowinandroid/core/domain/GetSearchContentsUseCase.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/testing/src/main/kotlin/com/google/samples/apps/nowinandroid/core/testing/repository/TestNewsRepository.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/testing/src/main/kotlin/com/google/samples/apps/nowinandroid/core/testing/repository/TestNewsRepository.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/testing/src/main/kotlin/com/google/samples/apps/nowinandroid/core/testing/repository/TestRecentSearchRepository.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/testing/src/main/kotlin/com/google/samples/apps/nowinandroid/core/testing/repository/TestRecentSearchRepository.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/testing/src/main/kotlin/com/google/samples/apps/nowinandroid/core/testing/repository/TestSearchContentsRepository.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/testing/src/main/kotlin/com/google/samples/apps/nowinandroid/core/testing/repository/TestSearchContentsRepository.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/testing/src/main/kotlin/com/google/samples/apps/nowinandroid/core/testing/repository/TestTopicsRepository.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/testing/src/main/kotlin/com/google/samples/apps/nowinandroid/core/testing/repository/TestTopicsRepository.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/testing/src/main/kotlin/com/google/samples/apps/nowinandroid/core/testing/repository/TestUserDataRepository.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/testing/src/main/kotlin/com/google/samples/apps/nowinandroid/core/testing/repository/TestUserDataRepository.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/feature/bookmarks/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/bookmarks/impl/BookmarksViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/feature/bookmarks/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/bookmarks/impl/BookmarksViewModel.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/feature/foryou/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/foryou/impl/ForYouViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/feature/foryou/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/foryou/impl/ForYouViewModel.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/feature/foryou/impl/src/test/kotlin/com/google/samples/apps/nowinandroid/feature/foryou/impl/ForYouViewModelTest.kt" beforeDir="false" afterPath="$PROJECT_DIR$/feature/foryou/impl/src/test/kotlin/com/google/samples/apps/nowinandroid/feature/foryou/impl/ForYouViewModelTest.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/feature/interests/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/interests/impl/InterestsViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/feature/interests/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/interests/impl/InterestsViewModel.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/feature/interests/impl/src/test/kotlin/com/google/samples/apps/nowinandroid/interests/impl/InterestsListDetailScreenTest.kt" beforeDir="false" afterPath="$PROJECT_DIR$/feature/interests/impl/src/test/kotlin/com/google/samples/apps/nowinandroid/interests/impl/InterestsListDetailScreenTest.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/feature/search/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/search/impl/RecentSearchQueriesUiState.kt" beforeDir="false" afterPath="$PROJECT_DIR$/feature/search/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/search/impl/RecentSearchQueriesUiState.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/feature/search/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/search/impl/SearchViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/feature/search/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/search/impl/SearchViewModel.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/feature/search/impl/src/test/kotlin/com/google/samples/apps/nowinandroid/feature/search/impl/SearchViewModelTest.kt" beforeDir="false" afterPath="$PROJECT_DIR$/feature/search/impl/src/test/kotlin/com/google/samples/apps/nowinandroid/feature/search/impl/SearchViewModelTest.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/feature/settings/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/settings/impl/SettingsViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/feature/settings/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/settings/impl/SettingsViewModel.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/feature/topic/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/topic/impl/TopicViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/feature/topic/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/topic/impl/TopicViewModel.kt" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -68,6 +115,9 @@
       </RecentBranches>
     </option>
   </component>
+  <component name="GithubDefaultAccount">
+    <option name="defaultAccountId" value="a8570b55-09af-41d7-bbfc-c830f8354439" />
+  </component>
   <component name="GithubPullRequestsUISettings"><![CDATA[{
   "selectedUrlAndAccountId": {
     "url": "https://github.com/riyaspullurofficial/LLM-Work_SPFY.git",
@@ -108,6 +158,7 @@
     "project.structure.last.edited": "Modules",
     "project.structure.proportion": "0.17",
     "project.structure.side.proportion": "0.2",
+    "settings.editor.selected.configurable": "org.jetbrains.plugins.github.ui.GithubSettingsConfigurable",
     "show.migrate.to.gradle.popup": "false"
   }
 }]]></component>
@@ -178,6 +229,12 @@
         <option name="Android.Gradle.BeforeRunTask" enabled="true" />
       </method>
     </configuration>
+    <configuration default="true" type="AppleRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" IS_LOCATION_SIMULATION_SUPPORTED="false" IS_LOCATION_SIMULATION_ALLOWED="true" APPLICATION_LANGUAGE="IDELaunchSchemeLanguageUseSystemLanguage" APPLICATION_REGION="" DEVELOPMENT_TEAM="" MAKE_ACTIVE="TRUE" SHOULD_DEBUG_EXTENSIONS="false">
+      <embedded_app_extension_list />
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -219,7 +276,23 @@
       <option name="project" value="LOCAL" />
       <updated>1785949748684</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="task: fifth phase - comments removed">
+      <option name="closed" value="true" />
+      <created>1785950352140</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1785950352140</updated>
+    </task>
+    <task id="LOCAL-00006" summary="task: sixth phase - component naming">
+      <option name="closed" value="true" />
+      <created>1785954114747</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1785954114747</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -238,7 +311,9 @@
     <MESSAGE value="task: second phase" />
     <MESSAGE value="task: third phase" />
     <MESSAGE value="task: fourth phase" />
-    <option name="LAST_COMMIT_MESSAGE" value="task: fourth phase" />
+    <MESSAGE value="task: fifth phase - comments removed" />
+    <MESSAGE value="task: sixth phase - component naming" />
+    <option name="LAST_COMMIT_MESSAGE" value="task: sixth phase - component naming" />
   </component>
   <component name="play_dynamic_filters_status">
     <option name="appIdToCheckInfo">
@@ -246,6 +321,11 @@
         <entry key="com.google.samples.apps.nowinandroid.core.ui.test">
           <value>
             <CheckInfo lastCheckTimestamp="1785945902818" />
+          </value>
+        </entry>
+        <entry key="com.google.samples.apps.nowinandroid.sync.test">
+          <value>
+            <CheckInfo lastCheckTimestamp="1785954931041" />
           </value>
         </entry>
       </map>

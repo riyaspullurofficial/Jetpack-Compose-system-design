@@ -18,6 +18,7 @@ package com.google.samples.apps.nowinandroid.core.data.repository
 
 import com.google.samples.apps.nowinandroid.core.model.data.UserNewsResource
 import com.google.samples.apps.nowinandroid.core.model.data.mapToUserNewsResources
+import com.google.samples.apps.nowinandroid.core.common.result.DomainResult
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -40,30 +41,76 @@ class CompositeUserNewsResourceRepository @Inject constructor(
      */
     override fun observeAll(
         query: NewsResourceQuery,
-    ): Flow<List<UserNewsResource>> =
+    ): Flow<DomainResult<List<UserNewsResource>>> =
         newsRepository.getNewsResources(query)
-            .combine(userDataRepository.userData) { newsResources, userData ->
-                newsResources.mapToUserNewsResources(userData)
+            .combine(userDataRepository.userData) { newsResourcesResult, userDataResult ->
+                if (newsResourcesResult is DomainResult.Success && userDataResult is DomainResult.Success) {
+                    DomainResult.Success(newsResourcesResult.data.mapToUserNewsResources(userDataResult.data))
+                } else if (newsResourcesResult is DomainResult.Error) {
+                    DomainResult.Error(newsResourcesResult.exception, newsResourcesResult.message)
+                } else if (userDataResult is DomainResult.Error) {
+                    DomainResult.Error(userDataResult.exception, userDataResult.message)
+                } else {
+                    DomainResult.Loading
+                }
             }
 
     /**
      * Returns available news resources (joined with user data) for the followed topics.
      */
-    override fun observeAllForFollowedTopics(): Flow<List<UserNewsResource>> =
-        userDataRepository.userData.map { it.followedTopics }.distinctUntilChanged()
-            .flatMapLatest { followedTopics ->
-                when {
-                    followedTopics.isEmpty() -> flowOf(emptyList())
-                    else -> observeAll(NewsResourceQuery(filterTopicIds = followedTopics))
+    override fun observeAllForFollowedTopics(): Flow<DomainResult<List<UserNewsResource>>> =
+        userDataRepository.userData
+            .map { result ->
+                if (result is DomainResult.Success) {
+                    DomainResult.Success(result.data.followedTopics)
+                } else if (result is DomainResult.Error) {
+                    DomainResult.Error(result.exception, result.message)
+                } else {
+                    DomainResult.Loading
+                }
+            }
+            .distinctUntilChanged()
+            .flatMapLatest { result ->
+                when (result) {
+                    is DomainResult.Success -> {
+                        val followedTopics = result.data
+                        if (followedTopics.isEmpty()) {
+                            flowOf(DomainResult.Success(emptyList()))
+                        } else {
+                            observeAll(NewsResourceQuery(filterTopicIds = followedTopics))
+                        }
+                    }
+
+                    is DomainResult.Error -> flowOf(DomainResult.Error(result.exception, result.message))
+                    DomainResult.Loading -> flowOf(DomainResult.Loading)
                 }
             }
 
-    override fun observeAllBookmarked(): Flow<List<UserNewsResource>> =
-        userDataRepository.userData.map { it.bookmarkedNewsResources }.distinctUntilChanged()
-            .flatMapLatest { bookmarkedNewsResources ->
-                when {
-                    bookmarkedNewsResources.isEmpty() -> flowOf(emptyList())
-                    else -> observeAll(NewsResourceQuery(filterNewsIds = bookmarkedNewsResources))
+    override fun observeAllBookmarked(): Flow<DomainResult<List<UserNewsResource>>> =
+        userDataRepository.userData
+            .map { result ->
+                if (result is DomainResult.Success) {
+                    DomainResult.Success(result.data.bookmarkedNewsResources)
+                } else if (result is DomainResult.Error) {
+                    DomainResult.Error(result.exception, result.message)
+                } else {
+                    DomainResult.Loading
+                }
+            }
+            .distinctUntilChanged()
+            .flatMapLatest { result ->
+                when (result) {
+                    is DomainResult.Success -> {
+                        val bookmarkedNewsResources = result.data
+                        if (bookmarkedNewsResources.isEmpty()) {
+                            flowOf(DomainResult.Success(emptyList()))
+                        } else {
+                            observeAll(NewsResourceQuery(filterNewsIds = bookmarkedNewsResources))
+                        }
+                    }
+
+                    is DomainResult.Error -> flowOf(DomainResult.Error(result.exception, result.message))
+                    DomainResult.Loading -> flowOf(DomainResult.Loading)
                 }
             }
 }

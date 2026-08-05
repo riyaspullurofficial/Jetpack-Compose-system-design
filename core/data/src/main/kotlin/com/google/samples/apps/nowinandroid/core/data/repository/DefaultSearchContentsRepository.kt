@@ -25,6 +25,8 @@ import com.google.samples.apps.nowinandroid.core.database.dao.TopicFtsDao
 import com.google.samples.apps.nowinandroid.core.database.model.PopulatedNewsResource
 import com.google.samples.apps.nowinandroid.core.database.model.asExternalModel
 import com.google.samples.apps.nowinandroid.core.database.model.asFtsEntity
+import com.google.samples.apps.nowinandroid.core.common.result.DomainResult
+import com.google.samples.apps.nowinandroid.core.common.result.asDomainResult
 import com.google.samples.apps.nowinandroid.core.model.data.SearchResult
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
@@ -58,7 +60,7 @@ internal class DefaultSearchContentsRepository @Inject constructor(
         }
     }
 
-    override fun searchContents(searchQuery: String): Flow<SearchResult> {
+    override fun searchContents(searchQuery: String): Flow<DomainResult<SearchResult>> {
         // Surround the query by asterisks to match the query when it's in the middle of
         // a word
         val newsResourceIds = newsResourceFtsDao.searchAllNewsResources("*$searchQuery*")
@@ -79,14 +81,15 @@ internal class DefaultSearchContentsRepository @Inject constructor(
                 topics = topics.map { it.asExternalModel() },
                 newsResources = newsResources.map { it.asExternalModel() },
             )
-        }
+        }.asDomainResult()
     }
 
-    override fun getSearchContentsCount(): Flow<Int> =
+    override fun getSearchContentsCount(): Flow<DomainResult<Int>> =
         combine(
             newsResourceFtsDao.getCount(),
             topicFtsDao.getCount(),
         ) { newsResourceCount, topicsCount ->
             newsResourceCount + topicsCount
         }
+            .asDomainResult()
 }

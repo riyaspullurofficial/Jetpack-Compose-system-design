@@ -19,6 +19,7 @@ package com.google.samples.apps.nowinandroid.feature.foryou.impl
 import androidx.lifecycle.SavedStateHandle
 import com.google.samples.apps.nowinandroid.core.analytics.AnalyticsEvent
 import com.google.samples.apps.nowinandroid.core.analytics.AnalyticsEvent.Param
+import com.google.samples.apps.nowinandroid.core.common.result.DomainResult
 import com.google.samples.apps.nowinandroid.core.data.repository.CompositeUserNewsResourceRepository
 import com.google.samples.apps.nowinandroid.core.domain.GetFollowableTopicsUseCase
 import com.google.samples.apps.nowinandroid.core.domain.UpdateBookmarkNoteUseCase
@@ -37,7 +38,9 @@ import com.google.samples.apps.nowinandroid.core.testing.util.MainDispatcherRule
 import com.google.samples.apps.nowinandroid.core.testing.util.TestAnalyticsHelper
 import com.google.samples.apps.nowinandroid.core.testing.util.TestSyncManager
 import com.google.samples.apps.nowinandroid.core.ui.NewsFeedUiState
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -483,17 +486,20 @@ class ForYouViewModelTest {
 
         assertEquals(
             expected = setOf(newsResourceId),
-            actual = userDataRepository.userData.first().bookmarkedNewsResources,
+            actual = userDataRepository.userData.successData().bookmarkedNewsResources,
         )
 
         viewModel.updateNewsResourceSaved(newsResourceId, false)
 
         assertEquals(
             expected = emptySet(),
-            actual = userDataRepository.userData.first().bookmarkedNewsResources,
+            actual = userDataRepository.userData.successData().bookmarkedNewsResources,
         )
     }
 }
+
+private suspend fun <T> Flow<DomainResult<T>>.successData(): T =
+    filterIsInstance<DomainResult.Success<T>>().first().data
 
 private val sampleTopics = listOf(
     Topic(

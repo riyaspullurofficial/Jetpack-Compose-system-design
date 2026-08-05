@@ -18,6 +18,7 @@ package com.google.samples.apps.nowinandroid.feature.search.impl
 
 import androidx.lifecycle.SavedStateHandle
 import com.google.samples.apps.nowinandroid.core.analytics.NoOpAnalyticsHelper
+import com.google.samples.apps.nowinandroid.core.common.result.DomainResult
 import com.google.samples.apps.nowinandroid.core.domain.GetRecentSearchQueriesUseCase
 import com.google.samples.apps.nowinandroid.core.domain.GetSearchContentsUseCase
 import com.google.samples.apps.nowinandroid.core.domain.UpdateBookmarkNoteUseCase
@@ -33,7 +34,9 @@ import com.google.samples.apps.nowinandroid.feature.search.impl.RecentSearchQuer
 import com.google.samples.apps.nowinandroid.feature.search.impl.SearchResultUiState.EmptyQuery
 import com.google.samples.apps.nowinandroid.feature.search.impl.SearchResultUiState.Loading
 import com.google.samples.apps.nowinandroid.feature.search.impl.SearchResultUiState.SearchNotReady
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -134,7 +137,7 @@ class SearchViewModelTest {
         viewModel.onSearchTriggered("")
 
         val recentSearchQueriesStream = getRecentQueryUseCase()
-        val recentSearchQueries = recentSearchQueriesStream.first()
+        val recentSearchQueries = recentSearchQueriesStream.successData()
         val recentSearchQuery = recentSearchQueries.firstOrNull()
 
         assertNull(recentSearchQuery)
@@ -173,14 +176,17 @@ class SearchViewModelTest {
 
         assertEquals(
             expected = setOf(newsResourceId),
-            actual = userDataRepository.userData.first().bookmarkedNewsResources,
+            actual = userDataRepository.userData.successData().bookmarkedNewsResources,
         )
 
         viewModel.setNewsResourceBookmarked(newsResourceId, false)
 
         assertEquals(
             expected = emptySet(),
-            actual = userDataRepository.userData.first().bookmarkedNewsResources,
+            actual = userDataRepository.userData.successData().bookmarkedNewsResources,
         )
     }
 }
+
+private suspend fun <T> Flow<DomainResult<T>>.successData(): T =
+    filterIsInstance<DomainResult.Success<T>>().first().data

@@ -16,6 +16,7 @@
 
 package com.google.samples.apps.nowinandroid.core.data.repository
 
+import com.google.samples.apps.nowinandroid.core.common.result.DomainResult
 import com.google.samples.apps.nowinandroid.core.data.Synchronizer
 import com.google.samples.apps.nowinandroid.core.data.model.asEntity
 import com.google.samples.apps.nowinandroid.core.data.model.topicCrossReferences
@@ -39,6 +40,8 @@ import com.google.samples.apps.nowinandroid.core.model.data.Topic
 import com.google.samples.apps.nowinandroid.core.network.model.NetworkChangeList
 import com.google.samples.apps.nowinandroid.core.network.model.NetworkNewsResource
 import com.google.samples.apps.nowinandroid.core.testing.notifications.TestNotifier
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -95,7 +98,7 @@ class OfflineFirstNewsRepositoryTest {
                     .first()
                     .map(PopulatedNewsResource::asExternalModel),
                 subject.getNewsResources()
-                    .first(),
+                    .successData(),
             )
         }
 
@@ -114,7 +117,7 @@ class OfflineFirstNewsRepositoryTest {
                         filterTopicIds = filteredInterestsIds,
                     ),
                 )
-                    .first(),
+                    .successData(),
             )
 
             assertEquals(
@@ -124,7 +127,7 @@ class OfflineFirstNewsRepositoryTest {
                         filterTopicIds = nonPresentInterestsIds,
                     ),
                 )
-                    .first(),
+                    .successData(),
             )
         }
 
@@ -290,7 +293,7 @@ class OfflineFirstNewsRepositoryTest {
 
             assertEquals(
                 network.getNewsResources().map { it.id }.toSet(),
-                niaPreferencesDataSource.userData.first().viewedNewsResources,
+                niaPreferencesDataSource.userData.successData().viewedNewsResources,
             )
         }
 
@@ -306,7 +309,7 @@ class OfflineFirstNewsRepositoryTest {
 
             assertEquals(
                 emptySet(),
-                niaPreferencesDataSource.userData.first().viewedNewsResources,
+                niaPreferencesDataSource.userData.successData().viewedNewsResources,
             )
         }
 
@@ -376,3 +379,6 @@ class OfflineFirstNewsRepositoryTest {
             assertTrue(notifier.addedNewsResources.isEmpty())
         }
 }
+
+private suspend fun <T> Flow<DomainResult<T>>.successData(): T =
+    filterIsInstance<DomainResult.Success<T>>().first().data

@@ -20,6 +20,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.samples.apps.nowinandroid.core.data.repository.UserDataRepository
+import com.google.samples.apps.nowinandroid.core.common.result.DomainResult
 import com.google.samples.apps.nowinandroid.core.domain.GetFollowableTopicsUseCase
 import com.google.samples.apps.nowinandroid.core.domain.TopicSortField
 import com.google.samples.apps.nowinandroid.core.model.data.FollowableTopic
@@ -56,8 +57,23 @@ class InterestsViewModel @AssistedInject constructor(
     val uiState: StateFlow<InterestsUiState> = combine(
         selectedTopicId,
         getFollowableTopics(sortBy = TopicSortField.NAME),
-        InterestsUiState::Interests,
-    ).stateIn(
+    ) { selectedId, topicsResult ->
+        when (topicsResult) {
+            is DomainResult.Success -> {
+                if (topicsResult.data.isEmpty()) {
+                    InterestsUiState.Empty
+                } else {
+                    InterestsUiState.Interests(
+                        selectedTopicId = selectedId,
+                        topics = topicsResult.data,
+                    )
+                }
+            }
+
+            is DomainResult.Error -> InterestsUiState.Empty // Or a new Error state
+            DomainResult.Loading -> InterestsUiState.Loading
+        }
+    }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = InterestsUiState.Loading,

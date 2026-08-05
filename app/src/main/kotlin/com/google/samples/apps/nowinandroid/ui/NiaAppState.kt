@@ -21,6 +21,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.navigation3.runtime.NavKey
+import com.google.samples.apps.nowinandroid.core.common.result.DomainResult
 import com.google.samples.apps.nowinandroid.core.data.repository.UserNewsResourceRepository
 import com.google.samples.apps.nowinandroid.core.data.util.NetworkMonitor
 import com.google.samples.apps.nowinandroid.core.data.util.TimeZoneMonitor
@@ -87,10 +88,22 @@ class NiaAppState(
      */
     val topLevelNavKeysWithUnreadResources: StateFlow<Set<NavKey>> =
         userNewsResourceRepository.observeAllForFollowedTopics()
-            .combine(userNewsResourceRepository.observeAllBookmarked()) { forYouNewsResources, bookmarkedNewsResources ->
+            .combine(userNewsResourceRepository.observeAllBookmarked()) { forYouResult, bookmarkedResult ->
+                val hasUnreadForYou = if (forYouResult is DomainResult.Success) {
+                    forYouResult.data.any { !it.hasBeenViewed }
+                } else {
+                    false
+                }
+
+                val hasUnreadBookmarks = if (bookmarkedResult is DomainResult.Success) {
+                    bookmarkedResult.data.any { !it.hasBeenViewed }
+                } else {
+                    false
+                }
+
                 setOfNotNull(
-                    ForYouNavKey.takeIf { forYouNewsResources.any { !it.hasBeenViewed } },
-                    BookmarksNavKey.takeIf { bookmarkedNewsResources.any { !it.hasBeenViewed } },
+                    ForYouNavKey.takeIf { hasUnreadForYou },
+                    BookmarksNavKey.takeIf { hasUnreadBookmarks },
                 )
             }
             .stateIn(
