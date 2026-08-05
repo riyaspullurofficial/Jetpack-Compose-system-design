@@ -139,6 +139,7 @@ class MainActivity : ComponentActivity() {
             )
 
             val currentTimeZone by appState.currentTimeZone.collectAsStateWithLifecycle()
+            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
             CompositionLocalProvider(
                 LocalAnalyticsHelper provides analyticsHelper,
@@ -149,7 +150,10 @@ class MainActivity : ComponentActivity() {
                     androidTheme = themeSettings.androidTheme,
                     disableDynamicTheming = themeSettings.disableDynamicTheming,
                 ) {
-                    NiaApp(appState)
+                    NiaApp(
+                        appState = appState,
+                        mainActivityUiState = uiState,
+                    )
                 }
             }
         }

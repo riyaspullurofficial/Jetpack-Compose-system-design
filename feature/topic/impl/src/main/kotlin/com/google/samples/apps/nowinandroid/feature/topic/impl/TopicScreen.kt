@@ -150,8 +150,8 @@ internal fun TopicScreen(
                 when (topicUiState) {
                     TopicUiState.Loading -> Unit // Handled above
 
-                    TopicUiState.Error -> item {
-                        Text(text = stringResource(id = TopicR.string.feature_topic_api_error))
+                    is TopicUiState.Error -> item {
+                        ErrorCompose(error = topicUiState.error)
                     }
 
                     is TopicUiState.Success -> {
@@ -203,10 +203,10 @@ private fun topicItemsSize(
     topicUiState: TopicUiState,
     newsUiState: NewsFeedUiState,
 ) = when (topicUiState) {
-    TopicUiState.Error -> 0 // Nothing
+    is TopicUiState.Error -> 1
     TopicUiState.Loading -> 1 // Loading bar
     is TopicUiState.Success -> when (newsUiState) {
-        NewsFeedUiState.Error -> 0 // Nothing
+        is NewsFeedUiState.Error -> 1
         NewsFeedUiState.Loading -> 1 // Loading bar
         is NewsFeedUiState.Success -> 2 + newsUiState.feed.size // Toolbar, header
     }
@@ -279,8 +279,8 @@ private fun LazyListScope.userNewsResourceCards(
             NiaLoadingWheel(contentDesc = "Loading news")
         }
 
-        NewsFeedUiState.Error -> item {
-            ErrorCompose()
+        is NewsFeedUiState.Error -> item {
+            ErrorCompose(error = news.error)
         }
     }
 }

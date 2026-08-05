@@ -64,6 +64,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
+import com.google.samples.apps.nowinandroid.MainActivityUiState
 import com.google.samples.apps.nowinandroid.R
 import com.google.samples.apps.nowinandroid.core.designsystem.component.NiaBackground
 import com.google.samples.apps.nowinandroid.core.designsystem.component.NiaGradientBackground
@@ -73,6 +74,7 @@ import com.google.samples.apps.nowinandroid.core.designsystem.icon.NiaIcons
 import com.google.samples.apps.nowinandroid.core.designsystem.theme.GradientColors
 import com.google.samples.apps.nowinandroid.core.designsystem.theme.LocalGradientColors
 import com.google.samples.apps.nowinandroid.core.navigation.Navigator
+import com.google.samples.apps.nowinandroid.core.ui.ErrorCompose
 import com.google.samples.apps.nowinandroid.core.navigation.toEntries
 import com.google.samples.apps.nowinandroid.feature.bookmarks.impl.navigation.LocalSnackbarHostState
 import com.google.samples.apps.nowinandroid.feature.bookmarks.impl.navigation.bookmarksEntry
@@ -89,6 +91,7 @@ import com.google.samples.apps.nowinandroid.feature.settings.impl.R as settingsR
 @Composable
 fun NiaApp(
     appState: NiaAppState,
+    mainActivityUiState: MainActivityUiState,
     modifier: Modifier = Modifier,
     windowAdaptiveInfo: WindowAdaptiveInfo = currentWindowAdaptiveInfo(),
 ) {
@@ -120,6 +123,7 @@ fun NiaApp(
             CompositionLocalProvider(LocalSnackbarHostState provides snackbarHostState) {
                 NiaApp(
                     appState = appState,
+                    mainActivityUiState = mainActivityUiState,
                     showSettingsDialog = showSettingsDialog,
                     onSettingsDismissed = { showSettingsDialog = false },
                     onTopAppBarActionClick = { showSettingsDialog = true },
@@ -138,6 +142,7 @@ fun NiaApp(
 )
 internal fun NiaApp(
     appState: NiaAppState,
+    mainActivityUiState: MainActivityUiState,
     showSettingsDialog: Boolean,
     onSettingsDismissed: () -> Unit,
     onTopAppBarActionClick: () -> Unit,
@@ -204,69 +209,73 @@ internal fun NiaApp(
                 )
             },
         ) { padding ->
-            Column(
-                Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-                    .consumeWindowInsets(padding)
-                    .windowInsetsPadding(
-                        WindowInsets.safeDrawing.only(
-                            WindowInsetsSides.Horizontal,
+            if (mainActivityUiState is MainActivityUiState.Error) {
+                ErrorCompose(error = mainActivityUiState.error)
+            } else {
+                Column(
+                    Modifier
+                        .fillMaxSize()
+                        .padding(padding)
+                        .consumeWindowInsets(padding)
+                        .windowInsetsPadding(
+                            WindowInsets.safeDrawing.only(
+                                WindowInsetsSides.Horizontal,
+                            ),
                         ),
-                    ),
-            ) {
-                // Only show the top app bar on top level destinations.
-                var shouldShowTopAppBar = false
-
-                if (appState.navigationState.currentKey in appState.navigationState.topLevelKeys) {
-                    shouldShowTopAppBar = true
-
-                    val destination = TOP_LEVEL_NAV_ITEMS[appState.navigationState.currentTopLevelKey]
-                        ?: error("Top level nav item not found for ${appState.navigationState.currentTopLevelKey}")
-
-                    NiaTopAppBar(
-                        titleRes = destination.titleTextId,
-                        navigationIcon = NiaIcons.Search,
-                        navigationIconContentDescription = stringResource(
-                            id = settingsR.string.feature_settings_impl_top_app_bar_navigation_icon_description,
-                        ),
-                        actionIcon = NiaIcons.Settings,
-                        actionIconContentDescription = stringResource(
-                            id = settingsR.string.feature_settings_impl_top_app_bar_action_icon_description,
-                        ),
-                        colors = TopAppBarDefaults.topAppBarColors(
-                            containerColor = Color.Transparent,
-                        ),
-                        onActionClick = { onTopAppBarActionClick() },
-                        onNavigationClick = { navigator.navigate(SearchNavKey) },
-                    )
-                }
-
-                Box(
-                    // Workaround for https://issuetracker.google.com/338478720
-                    modifier = Modifier.consumeWindowInsets(
-                        if (shouldShowTopAppBar) {
-                            WindowInsets.safeDrawing.only(WindowInsetsSides.Top)
-                        } else {
-                            WindowInsets(0, 0, 0, 0)
-                        },
-                    ),
                 ) {
-                    val listDetailStrategy = rememberListDetailSceneStrategy<NavKey>()
+                    // Only show the top app bar on top level destinations.
+                    var shouldShowTopAppBar = false
 
-                    val entryProvider = entryProvider {
-                        forYouEntry(navigator)
-                        bookmarksEntry(navigator)
-                        interestsEntry(navigator)
-                        topicEntry(navigator)
-                        searchEntry(navigator)
+                    if (appState.navigationState.currentKey in appState.navigationState.topLevelKeys) {
+                        shouldShowTopAppBar = true
+
+                        val destination = TOP_LEVEL_NAV_ITEMS[appState.navigationState.currentTopLevelKey]
+                            ?: error("Top level nav item not found for ${appState.navigationState.currentTopLevelKey}")
+
+                        NiaTopAppBar(
+                            titleRes = destination.titleTextId,
+                            navigationIcon = NiaIcons.Search,
+                            navigationIconContentDescription = stringResource(
+                                id = settingsR.string.feature_settings_impl_top_app_bar_navigation_icon_description,
+                            ),
+                            actionIcon = NiaIcons.Settings,
+                            actionIconContentDescription = stringResource(
+                                id = settingsR.string.feature_settings_impl_top_app_bar_action_icon_description,
+                            ),
+                            colors = TopAppBarDefaults.topAppBarColors(
+                                containerColor = Color.Transparent,
+                            ),
+                            onActionClick = { onTopAppBarActionClick() },
+                            onNavigationClick = { navigator.navigate(SearchNavKey) },
+                        )
                     }
 
-                    NavDisplay(
-                        entries = appState.navigationState.toEntries(entryProvider),
-                        sceneStrategy = listDetailStrategy,
-                        onBack = { navigator.goBack() },
-                    )
+                    Box(
+                        // Workaround for https://issuetracker.google.com/338478720
+                        modifier = Modifier.consumeWindowInsets(
+                            if (shouldShowTopAppBar) {
+                                WindowInsets.safeDrawing.only(WindowInsetsSides.Top)
+                            } else {
+                                WindowInsets(0, 0, 0, 0)
+                            },
+                        ),
+                    ) {
+                        val listDetailStrategy = rememberListDetailSceneStrategy<NavKey>()
+
+                        val entryProvider = entryProvider {
+                            forYouEntry(navigator)
+                            bookmarksEntry(navigator)
+                            interestsEntry(navigator)
+                            topicEntry(navigator)
+                            searchEntry(navigator)
+                        }
+
+                        NavDisplay(
+                            entries = appState.navigationState.toEntries(entryProvider),
+                            sceneStrategy = listDetailStrategy,
+                            onBack = { navigator.goBack() },
+                        )
+                    }
                 }
             }
         }

@@ -38,6 +38,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import com.google.samples.apps.nowinandroid.core.analytics.LocalAnalyticsHelper
+import com.google.samples.apps.nowinandroid.core.common.result.DomainError
 import com.google.samples.apps.nowinandroid.core.designsystem.theme.NiaTheme
 import com.google.samples.apps.nowinandroid.core.model.data.UserNewsResource
 
@@ -58,9 +59,9 @@ fun LazyStaggeredGridScope.newsFeed(
 ) {
     when (feedState) {
         NewsFeedUiState.Loading -> Unit
-        NewsFeedUiState.Error -> {
+        is NewsFeedUiState.Error -> {
             item(span = StaggeredGridItemSpan.FullLine) {
-                ErrorCompose()
+                ErrorCompose(error = feedState.error)
             }
         }
 
@@ -116,7 +117,7 @@ sealed interface NewsFeedUiState {
     /**
      * The feed loading failed.
      */
-    data object Error : NewsFeedUiState
+    data class Error(val error: DomainError? = null) : NewsFeedUiState
 
     /**
      * The feed is loaded with the given list of news resources.

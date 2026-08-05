@@ -91,17 +91,17 @@ class SearchViewModel @Inject constructor(
                                                     newsResources = result.data.newsResources,
                                                 )
 
-                                                is DomainResult.Error -> SearchResultUiState.LoadFailed
+                                                is DomainResult.Error -> SearchResultUiState.LoadFailed(result.error)
                                                 DomainResult.Loading -> SearchResultUiState.Loading
                                             }
                                         }
-                                        .catch { emit(SearchResultUiState.LoadFailed) }
+                                        .catch { emit(SearchResultUiState.LoadFailed()) }
                                 }
                             }
                         }
                     }
 
-                    is DomainResult.Error -> flowOf(SearchResultUiState.LoadFailed)
+                    is DomainResult.Error -> flowOf(SearchResultUiState.LoadFailed(totalCountResult.error))
                     DomainResult.Loading -> flowOf(SearchResultUiState.Loading)
                 }
             }.stateIn(
@@ -115,7 +115,7 @@ class SearchViewModel @Inject constructor(
             .map { result ->
                 when (result) {
                     is DomainResult.Success -> RecentSearchQueriesUiState.Success(result.data)
-                    is DomainResult.Error -> RecentSearchQueriesUiState.LoadFailed
+                    is DomainResult.Error -> RecentSearchQueriesUiState.LoadFailed(result.error)
                     DomainResult.Loading -> RecentSearchQueriesUiState.Loading
                 }
             }

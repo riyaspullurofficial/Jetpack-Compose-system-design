@@ -57,9 +57,9 @@ class GetFollowableTopicsUseCase @Inject constructor(
                 },
             )
         } else if (userDataResult is DomainResult.Error) {
-            DomainResult.Error(userDataResult.exception, userDataResult.message)
+            DomainResult.Error(userDataResult.error)
         } else if (topicsResult is DomainResult.Error) {
-            DomainResult.Error(topicsResult.exception, topicsResult.message)
+            DomainResult.Error(topicsResult.error)
         } else {
             DomainResult.Loading
         }

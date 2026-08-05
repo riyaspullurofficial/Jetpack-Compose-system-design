@@ -21,6 +21,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.samples.apps.nowinandroid.core.data.repository.UserDataRepository
 import com.google.samples.apps.nowinandroid.core.model.data.DarkThemeConfig
 import com.google.samples.apps.nowinandroid.core.model.data.ThemeBrand
+import com.google.samples.apps.nowinandroid.core.common.result.DomainError
 import com.google.samples.apps.nowinandroid.core.common.result.DomainResult
 import com.google.samples.apps.nowinandroid.feature.settings.impl.SettingsUiState.Loading
 import com.google.samples.apps.nowinandroid.feature.settings.impl.SettingsUiState.Success
@@ -52,7 +53,7 @@ class SettingsViewModel @Inject constructor(
                         )
                     }
 
-                    is DomainResult.Error -> Loading // Or a new error state
+                    is DomainResult.Error -> SettingsUiState.Error(userDataResult.error)
                     DomainResult.Loading -> Loading
                 }
             }
@@ -93,4 +94,5 @@ data class UserEditableSettings(
 sealed interface SettingsUiState {
     data object Loading : SettingsUiState
     data class Success(val settings: UserEditableSettings) : SettingsUiState
+    data class Error(val error: DomainError? = null) : SettingsUiState
 }

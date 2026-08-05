@@ -19,6 +19,7 @@ package com.google.samples.apps.nowinandroid.feature.topic.impl
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.samples.apps.nowinandroid.core.common.result.DomainError
 import com.google.samples.apps.nowinandroid.core.common.result.DomainResult
 import com.google.samples.apps.nowinandroid.core.data.repository.NewsResourceQuery
 import com.google.samples.apps.nowinandroid.core.data.repository.TopicsRepository
@@ -144,8 +145,10 @@ private fun topicUiState(
                         isFollowed = topicId in userDataResult.data.followedTopics,
                     ),
                 )
-            } else if (userDataResult is DomainResult.Error || topicResult is DomainResult.Error) {
-                TopicUiState.Error
+            } else if (userDataResult is DomainResult.Error) {
+                TopicUiState.Error(userDataResult.error)
+            } else if (topicResult is DomainResult.Error) {
+                TopicUiState.Error(topicResult.error)
             } else {
                 TopicUiState.Loading
             }
@@ -165,8 +168,10 @@ private fun newsUiState(
         .map { (newsResourcesResult, userDataResult) ->
             if (newsResourcesResult is DomainResult.Success && userDataResult is DomainResult.Success) {
                 NewsFeedUiState.Success(newsResourcesResult.data)
-            } else if (newsResourcesResult is DomainResult.Error || userDataResult is DomainResult.Error) {
-                NewsFeedUiState.Error
+            } else if (newsResourcesResult is DomainResult.Error) {
+                NewsFeedUiState.Error(newsResourcesResult.error)
+            } else if (userDataResult is DomainResult.Error) {
+                NewsFeedUiState.Error(userDataResult.error)
             } else {
                 NewsFeedUiState.Loading
             }
@@ -175,6 +180,6 @@ private fun newsUiState(
 
 sealed interface TopicUiState {
     data class Success(val followableTopic: FollowableTopic) : TopicUiState
-    data object Error : TopicUiState
+    data class Error(val error: DomainError? = null) : TopicUiState
     data object Loading : TopicUiState
 }

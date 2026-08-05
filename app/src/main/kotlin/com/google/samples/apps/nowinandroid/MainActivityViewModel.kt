@@ -24,6 +24,7 @@ import com.google.samples.apps.nowinandroid.core.data.repository.UserDataReposit
 import com.google.samples.apps.nowinandroid.core.model.data.DarkThemeConfig
 import com.google.samples.apps.nowinandroid.core.model.data.ThemeBrand
 import com.google.samples.apps.nowinandroid.core.model.data.UserData
+import com.google.samples.apps.nowinandroid.core.common.result.DomainError
 import com.google.samples.apps.nowinandroid.core.common.result.DomainResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
@@ -39,7 +40,7 @@ class MainActivityViewModel @Inject constructor(
     val uiState: StateFlow<MainActivityUiState> = userDataRepository.userData.map { result ->
         when (result) {
             is DomainResult.Success -> Success(result.data)
-            is DomainResult.Error -> Loading // Or error state
+            is DomainResult.Error -> MainActivityUiState.Error(result.error)
             DomainResult.Loading -> Loading
         }
     }.stateIn(
@@ -51,6 +52,8 @@ class MainActivityViewModel @Inject constructor(
 
 sealed interface MainActivityUiState {
     data object Loading : MainActivityUiState
+
+    data class Error(val error: DomainError) : MainActivityUiState
 
     data class Success(val userData: UserData) : MainActivityUiState {
         override val shouldDisableDynamicTheming = !userData.useDynamicColor

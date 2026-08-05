@@ -20,6 +20,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.samples.apps.nowinandroid.core.data.repository.UserDataRepository
+import com.google.samples.apps.nowinandroid.core.common.result.DomainError
 import com.google.samples.apps.nowinandroid.core.common.result.DomainResult
 import com.google.samples.apps.nowinandroid.core.domain.GetFollowableTopicsUseCase
 import com.google.samples.apps.nowinandroid.core.domain.TopicSortField
@@ -70,7 +71,7 @@ class InterestsViewModel @AssistedInject constructor(
                 }
             }
 
-            is DomainResult.Error -> InterestsUiState.Empty // Or a new Error state
+            is DomainResult.Error -> InterestsUiState.Error(topicsResult.error)
             DomainResult.Loading -> InterestsUiState.Loading
         }
     }.stateIn(
@@ -104,6 +105,8 @@ sealed interface InterestsUiState {
         val selectedTopicId: String?,
         val topics: List<FollowableTopic>,
     ) : InterestsUiState
+
+    data class Error(val error: DomainError? = null) : InterestsUiState
 
     data object Empty : InterestsUiState
 }

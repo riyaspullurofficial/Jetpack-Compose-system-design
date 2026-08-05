@@ -47,7 +47,9 @@ class TestSearchContentsRepository : SearchContentsRepository {
             )
         }.asDomainResult()
 
-    override fun getSearchContentsCount(): Flow<Int> = combine(cachedTopics, cachedNewsResources) { topics, news -> topics.size + news.size }
+    override fun getSearchContentsCount(): Flow<DomainResult<Int>> =
+        combine(cachedTopics, cachedNewsResources) { topics, news -> topics.size + news.size }
+            .asDomainResult()
 
     @TestOnly
     fun addTopics(topics: List<Topic>) = cachedTopics.update { it + topics }

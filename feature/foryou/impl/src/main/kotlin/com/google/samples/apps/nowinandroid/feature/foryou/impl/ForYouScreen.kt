@@ -510,7 +510,7 @@ private fun feedItemsSize(
 ): Int {
     val feedSize = when (feedState) {
         NewsFeedUiState.Loading -> 0
-        NewsFeedUiState.Error -> 1
+        is NewsFeedUiState.Error -> 1
         is NewsFeedUiState.Success -> feedState.feed.size
     }
     val onboardingSize = when (onboardingUiState) {

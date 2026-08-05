@@ -33,5 +33,5 @@ internal class FakeSearchContentsRepository @Inject constructor() : SearchConten
     override fun searchContents(searchQuery: String): Flow<DomainResult<SearchResult>> =
         flowOf(SearchResult()).asDomainResult()
 
-    override fun getSearchContentsCount(): Flow<Int> = flowOf(1)
+    override fun getSearchContentsCount(): Flow<DomainResult<Int>> = flowOf(1).asDomainResult()
 }

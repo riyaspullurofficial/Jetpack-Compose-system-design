@@ -27,6 +27,7 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.samples.apps.nowinandroid.core.designsystem.component.NiaBackground
 import com.google.samples.apps.nowinandroid.core.designsystem.component.NiaLoadingWheel
+import com.google.samples.apps.nowinandroid.core.ui.ErrorCompose
 import com.google.samples.apps.nowinandroid.core.designsystem.theme.NiaTheme
 import com.google.samples.apps.nowinandroid.core.model.data.FollowableTopic
 import com.google.samples.apps.nowinandroid.core.ui.DevicePreviews
@@ -82,6 +83,8 @@ internal fun InterestsScreen(
                     selectedTopicId = uiState.selectedTopicId,
                     shouldHighlightSelectedTopic = shouldHighlightSelectedTopic,
                 )
+
+            is InterestsUiState.Error -> ErrorCompose(error = uiState.error)
 
             is InterestsUiState.Empty -> InterestsEmptyScreen()
         }

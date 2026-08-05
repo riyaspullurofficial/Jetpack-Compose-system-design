@@ -47,9 +47,9 @@ class CompositeUserNewsResourceRepository @Inject constructor(
                 if (newsResourcesResult is DomainResult.Success && userDataResult is DomainResult.Success) {
                     DomainResult.Success(newsResourcesResult.data.mapToUserNewsResources(userDataResult.data))
                 } else if (newsResourcesResult is DomainResult.Error) {
-                    DomainResult.Error(newsResourcesResult.exception, newsResourcesResult.message)
+                    DomainResult.Error(newsResourcesResult.error)
                 } else if (userDataResult is DomainResult.Error) {
-                    DomainResult.Error(userDataResult.exception, userDataResult.message)
+                    DomainResult.Error(userDataResult.error)
                 } else {
                     DomainResult.Loading
                 }
@@ -64,7 +64,7 @@ class CompositeUserNewsResourceRepository @Inject constructor(
                 if (result is DomainResult.Success) {
                     DomainResult.Success(result.data.followedTopics)
                 } else if (result is DomainResult.Error) {
-                    DomainResult.Error(result.exception, result.message)
+                    DomainResult.Error(result.error)
                 } else {
                     DomainResult.Loading
                 }
@@ -81,7 +81,7 @@ class CompositeUserNewsResourceRepository @Inject constructor(
                         }
                     }
 
-                    is DomainResult.Error -> flowOf(DomainResult.Error(result.exception, result.message))
+                    is DomainResult.Error -> flowOf(DomainResult.Error(result.error))
                     DomainResult.Loading -> flowOf(DomainResult.Loading)
                 }
             }
@@ -92,7 +92,7 @@ class CompositeUserNewsResourceRepository @Inject constructor(
                 if (result is DomainResult.Success) {
                     DomainResult.Success(result.data.bookmarkedNewsResources)
                 } else if (result is DomainResult.Error) {
-                    DomainResult.Error(result.exception, result.message)
+                    DomainResult.Error(result.error)
                 } else {
                     DomainResult.Loading
                 }
@@ -109,7 +109,7 @@ class CompositeUserNewsResourceRepository @Inject constructor(
                         }
                     }
 
-                    is DomainResult.Error -> flowOf(DomainResult.Error(result.exception, result.message))
+                    is DomainResult.Error -> flowOf(DomainResult.Error(result.error))
                     DomainResult.Loading -> flowOf(DomainResult.Loading)
                 }
             }

@@ -184,7 +184,7 @@ internal fun SearchScreen(
                 )
             }
 
-            SearchResultUiState.LoadFailed -> ErrorCompose()
+            is SearchResultUiState.LoadFailed -> ErrorCompose(error = searchResultUiState.error)
             SearchResultUiState.SearchNotReady -> SearchNotReadyBody()
             SearchResultUiState.EmptyQuery,
             -> {

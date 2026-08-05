@@ -64,14 +64,14 @@ class GetSearchContentsUseCase @Inject constructor(
                                     ),
                                 )
                             } else if (userDataResult is DomainResult.Error) {
-                                DomainResult.Error(userDataResult.exception, userDataResult.message)
+                                DomainResult.Error(userDataResult.error)
                             } else {
                                 DomainResult.Loading
                             }
                         }
                     }
 
-                    is DomainResult.Error -> flowOf(DomainResult.Error(searchResultResult.exception, searchResultResult.message))
+                    is DomainResult.Error -> flowOf(DomainResult.Error(searchResultResult.error))
                     DomainResult.Loading -> flowOf(DomainResult.Loading)
                 }
             }

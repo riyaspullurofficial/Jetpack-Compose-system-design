@@ -120,7 +120,7 @@ class ForYouViewModel @Inject constructor(
             .map<DomainResult<List<UserNewsResource>>, NewsFeedUiState> { result ->
                 when (result) {
                     is DomainResult.Success -> NewsFeedUiState.Success(result.data)
-                    is DomainResult.Error -> NewsFeedUiState.Error
+                    is DomainResult.Error -> NewsFeedUiState.Error(result.error)
                     DomainResult.Loading -> NewsFeedUiState.Loading
                 }
             }

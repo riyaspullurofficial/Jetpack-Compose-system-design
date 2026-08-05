@@ -16,6 +16,7 @@
 
 package com.google.samples.apps.nowinandroid.feature.search.impl
 
+import com.google.samples.apps.nowinandroid.core.common.result.DomainError
 import com.google.samples.apps.nowinandroid.core.model.data.FollowableTopic
 import com.google.samples.apps.nowinandroid.core.model.data.UserNewsResource
 
@@ -29,7 +30,7 @@ sealed interface SearchResultUiState {
      */
     data object EmptyQuery : SearchResultUiState
 
-    data object LoadFailed : SearchResultUiState
+    data class LoadFailed(val error: DomainError? = null) : SearchResultUiState
 
     data class Success(
         val topics: List<FollowableTopic> = emptyList(),

@@ -20,6 +20,17 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
+import java.io.IOException
+
+/**
+ * A sealed class that represents different types of domain errors.
+ */
+sealed interface DomainError {
+    data class GenericError(val throwable: Throwable? = null) : DomainError
+    data class CustomError(val message: String) : DomainError
+    data object NetworkError : DomainError
+    data object UnknownError : DomainError
+}
 
 /**
  * A sealed class that represents the result of a domain operation, including its loading state.
@@ -27,8 +38,16 @@ import kotlinx.coroutines.flow.onStart
  */
 sealed class DomainResult<out T> {
     data class Success<T>(val data: T) : DomainResult<T>()
-    data class Error(val exception: Throwable? = null, val message: String? = null) : DomainResult<Nothing>()
+    data class Error(val error: DomainError) : DomainResult<Nothing>()
     data object Loading : DomainResult<Nothing>()
+}
+
+/**
+ * Maps a [Throwable] to a [DomainError].
+ */
+fun Throwable.toDomainError(): DomainError = when (this) {
+    is IOException -> DomainError.NetworkError
+    else -> DomainError.GenericError(this)
 }
 
 /**
@@ -36,4 +55,4 @@ sealed class DomainResult<out T> {
  */
 fun <T> Flow<T>.asDomainResult(): Flow<DomainResult<T>> = map<T, DomainResult<T>> { DomainResult.Success(it) }
     .onStart { emit(DomainResult.Loading) }
-    .catch { emit(DomainResult.Error(it)) }
+    .catch { emit(DomainResult.Error(it.toDomainError())) }

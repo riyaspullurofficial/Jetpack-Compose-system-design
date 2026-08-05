@@ -224,7 +224,7 @@ internal fun BookmarksScreen(
         ) {
             when (feedState) {
                 Loading -> LoadingState(Modifier.fillMaxSize())
-                NewsFeedUiState.Error -> ErrorCompose(Modifier.fillMaxSize())
+                is NewsFeedUiState.Error -> ErrorCompose(Modifier.fillMaxSize(), error = feedState.error)
                 is Success -> if (feedState.feed.isNotEmpty()) {
                     Column {
                         if (isSelectionMode) {
@@ -318,7 +318,8 @@ private fun BookmarksGrid(
             }
         }
         val itemsAvailable = when (feedState) {
-            Loading, NewsFeedUiState.Error -> 1
+            Loading -> 1
+            is NewsFeedUiState.Error -> 1
             is Success -> feedState.feed.size
         }
         val scrollbarState = scrollableState.scrollbarState(

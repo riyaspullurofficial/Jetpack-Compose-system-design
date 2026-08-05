@@ -16,6 +16,7 @@
 
 package com.google.samples.apps.nowinandroid.core.ui
 
+import com.google.samples.apps.nowinandroid.core.common.result.DomainError
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -32,8 +33,16 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun ErrorCompose(
     modifier: Modifier = Modifier,
-    message: String = stringResource(R.string.core_ui_error_loading_feed),
+    error: DomainError? = null,
+    message: String? = null,
 ) {
+    val displayMessage = message ?: when (error) {
+        is DomainError.GenericError -> stringResource(R.string.core_ui_error_loading_feed)
+        is DomainError.CustomError -> error.message
+        DomainError.NetworkError -> stringResource(R.string.core_ui_error_network)
+        DomainError.UnknownError -> stringResource(R.string.core_ui_error_unknown)
+        else -> stringResource(R.string.core_ui_error_loading_feed)
+    }
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -42,7 +51,7 @@ fun ErrorCompose(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
-            text = message,
+            text = displayMessage,
             style = MaterialTheme.typography.titleMedium,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.error,
