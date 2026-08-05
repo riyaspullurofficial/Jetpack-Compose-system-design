@@ -20,6 +20,8 @@ import androidx.lifecycle.SavedStateHandle
 import com.google.samples.apps.nowinandroid.core.analytics.NoOpAnalyticsHelper
 import com.google.samples.apps.nowinandroid.core.domain.GetRecentSearchQueriesUseCase
 import com.google.samples.apps.nowinandroid.core.domain.GetSearchContentsUseCase
+import com.google.samples.apps.nowinandroid.core.domain.UpdateBookmarkNoteUseCase
+import com.google.samples.apps.nowinandroid.core.domain.UpdateNewsResourceBookmarkUseCase
 import com.google.samples.apps.nowinandroid.core.testing.data.newsResourcesTestData
 import com.google.samples.apps.nowinandroid.core.testing.data.topicsTestData
 import com.google.samples.apps.nowinandroid.core.testing.repository.TestRecentSearchRepository
@@ -60,6 +62,8 @@ class SearchViewModelTest {
     )
     private val recentSearchRepository = TestRecentSearchRepository()
     private val getRecentQueryUseCase = GetRecentSearchQueriesUseCase(recentSearchRepository)
+    private val updateNewsResourceBookmarkUseCase = UpdateNewsResourceBookmarkUseCase(userDataRepository)
+    private val updateBookmarkNoteUseCase = UpdateBookmarkNoteUseCase(userDataRepository)
 
     private lateinit var viewModel: SearchViewModel
 
@@ -73,6 +77,8 @@ class SearchViewModelTest {
             recentSearchRepository = recentSearchRepository,
             userDataRepository = userDataRepository,
             analyticsHelper = NoOpAnalyticsHelper(),
+            updateNewsResourceBookmarkUseCase = updateNewsResourceBookmarkUseCase,
+            updateBookmarkNoteUseCase = updateBookmarkNoteUseCase,
         )
         userDataRepository.setUserData(emptyUserData)
     }

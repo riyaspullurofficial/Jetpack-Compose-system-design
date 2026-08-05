@@ -16,7 +16,10 @@
 
 package com.google.samples.apps.nowinandroid.feature.topic.impl
 
+import androidx.lifecycle.SavedStateHandle
 import com.google.samples.apps.nowinandroid.core.data.repository.CompositeUserNewsResourceRepository
+import com.google.samples.apps.nowinandroid.core.domain.UpdateBookmarkNoteUseCase
+import com.google.samples.apps.nowinandroid.core.domain.UpdateNewsResourceBookmarkUseCase
 import com.google.samples.apps.nowinandroid.core.model.data.FollowableTopic
 import com.google.samples.apps.nowinandroid.core.model.data.NewsResource
 import com.google.samples.apps.nowinandroid.core.model.data.Topic
@@ -53,14 +56,20 @@ class TopicViewModelTest {
         newsRepository = newsRepository,
         userDataRepository = userDataRepository,
     )
+    private val updateNewsResourceBookmarkUseCase = UpdateNewsResourceBookmarkUseCase(userDataRepository)
+    private val updateBookmarkNoteUseCase = UpdateBookmarkNoteUseCase(userDataRepository)
+
     private lateinit var viewModel: TopicViewModel
 
     @Before
     fun setup() {
         viewModel = TopicViewModel(
+            savedStateHandle = SavedStateHandle(),
             userDataRepository = userDataRepository,
             topicsRepository = topicsRepository,
             userNewsResourceRepository = userNewsResourceRepository,
+            updateNewsResourceBookmarkUseCase = updateNewsResourceBookmarkUseCase,
+            updateBookmarkNoteUseCase = updateBookmarkNoteUseCase,
             topicId = testInputTopics[0].topic.id,
         )
     }

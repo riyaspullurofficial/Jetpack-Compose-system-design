@@ -9,39 +9,22 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="667e5750-e37a-487a-a71d-83425b6f2a95" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/core/ui/src/main/kotlin/com/google/samples/apps/nowinandroid/core/ui/NoteEditDialog.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="667e5750-e37a-487a-a71d-83425b6f2a95" name="Changes" comment="task: Initial work">
+      <change afterPath="$PROJECT_DIR$/.idea/LLM-Work_SPFY.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/easycode.ignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/git_toolbox_prj.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/core/domain/src/main/kotlin/com/google/samples/apps/nowinandroid/core/domain/BulkRemoveBookmarksUseCase.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/core/domain/src/main/kotlin/com/google/samples/apps/nowinandroid/core/domain/RestoreBookmarksUseCase.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/core/domain/src/main/kotlin/com/google/samples/apps/nowinandroid/core/domain/UpdateBookmarkNoteUseCase.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/core/domain/src/main/kotlin/com/google/samples/apps/nowinandroid/core/domain/UpdateNewsResourceBookmarkUseCase.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/data/src/main/kotlin/com/google/samples/apps/nowinandroid/core/data/repository/OfflineFirstUserDataRepository.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/data/src/main/kotlin/com/google/samples/apps/nowinandroid/core/data/repository/OfflineFirstUserDataRepository.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/data/src/main/kotlin/com/google/samples/apps/nowinandroid/core/data/repository/UserDataRepository.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/data/src/main/kotlin/com/google/samples/apps/nowinandroid/core/data/repository/UserDataRepository.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/data/src/test/kotlin/com/google/samples/apps/nowinandroid/core/data/UserNewsResourceTest.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/data/src/test/kotlin/com/google/samples/apps/nowinandroid/core/data/UserNewsResourceTest.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/data/src/test/kotlin/com/google/samples/apps/nowinandroid/core/data/repository/OfflineFirstUserDataRepositoryTest.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/data/src/test/kotlin/com/google/samples/apps/nowinandroid/core/data/repository/OfflineFirstUserDataRepositoryTest.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/datastore-proto/src/main/proto/com/google/samples/apps/nowinandroid/data/user_preferences.proto" beforeDir="false" afterPath="$PROJECT_DIR$/core/datastore-proto/src/main/proto/com/google/samples/apps/nowinandroid/data/user_preferences.proto" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/datastore/src/main/kotlin/com/google/samples/apps/nowinandroid/core/datastore/NiaPreferencesDataSource.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/datastore/src/main/kotlin/com/google/samples/apps/nowinandroid/core/datastore/NiaPreferencesDataSource.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/designsystem/src/main/kotlin/com/google/samples/apps/nowinandroid/core/designsystem/component/TopAppBar.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/designsystem/src/main/kotlin/com/google/samples/apps/nowinandroid/core/designsystem/component/TopAppBar.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/designsystem/src/main/kotlin/com/google/samples/apps/nowinandroid/core/designsystem/icon/NiaIcons.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/designsystem/src/main/kotlin/com/google/samples/apps/nowinandroid/core/designsystem/icon/NiaIcons.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/model/src/main/kotlin/com/google/samples/apps/nowinandroid/core/model/data/UserData.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/model/src/main/kotlin/com/google/samples/apps/nowinandroid/core/model/data/UserData.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/model/src/main/kotlin/com/google/samples/apps/nowinandroid/core/model/data/UserNewsResource.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/model/src/main/kotlin/com/google/samples/apps/nowinandroid/core/model/data/UserNewsResource.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/testing/src/main/kotlin/com/google/samples/apps/nowinandroid/core/testing/data/UserNewsResourcesTestData.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/testing/src/main/kotlin/com/google/samples/apps/nowinandroid/core/testing/data/UserNewsResourcesTestData.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/testing/src/main/kotlin/com/google/samples/apps/nowinandroid/core/testing/repository/TestUserDataRepository.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/testing/src/main/kotlin/com/google/samples/apps/nowinandroid/core/testing/repository/TestUserDataRepository.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/ui/src/main/kotlin/com/google/samples/apps/nowinandroid/core/ui/NewsFeed.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/ui/src/main/kotlin/com/google/samples/apps/nowinandroid/core/ui/NewsFeed.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/ui/src/main/kotlin/com/google/samples/apps/nowinandroid/core/ui/NewsResourceCard.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/ui/src/main/kotlin/com/google/samples/apps/nowinandroid/core/ui/NewsResourceCard.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/ui/src/main/kotlin/com/google/samples/apps/nowinandroid/core/ui/NewsResourceCardList.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/ui/src/main/kotlin/com/google/samples/apps/nowinandroid/core/ui/NewsResourceCardList.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/ui/src/main/kotlin/com/google/samples/apps/nowinandroid/core/ui/UserNewsResourcePreviewParameterProvider.kt" beforeDir="false" afterPath="$PROJECT_DIR$/core/ui/src/main/kotlin/com/google/samples/apps/nowinandroid/core/ui/UserNewsResourcePreviewParameterProvider.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/ui/src/main/res/values/strings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/core/ui/src/main/res/values/strings.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/feature/bookmarks/impl/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/feature/bookmarks/impl/build.gradle.kts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/feature/bookmarks/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/bookmarks/impl/BookmarksScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/feature/bookmarks/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/bookmarks/impl/BookmarksScreen.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/feature/bookmarks/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/bookmarks/impl/BookmarksViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/feature/bookmarks/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/bookmarks/impl/BookmarksViewModel.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/feature/bookmarks/impl/src/test/kotlin/com/google/samples/apps/nowinandroid/feature/bookmarks/impl/BookmarksViewModelTest.kt" beforeDir="false" afterPath="$PROJECT_DIR$/feature/bookmarks/impl/src/test/kotlin/com/google/samples/apps/nowinandroid/feature/bookmarks/impl/BookmarksViewModelTest.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/feature/foryou/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/foryou/impl/ForYouScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/feature/foryou/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/foryou/impl/ForYouScreen.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/feature/foryou/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/foryou/impl/ForYouViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/feature/foryou/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/foryou/impl/ForYouViewModel.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/feature/search/impl/src/androidTest/kotlin/com/google/samples/apps/nowinandroid/feature/search/impl/SearchScreenTest.kt" beforeDir="false" afterPath="$PROJECT_DIR$/feature/search/impl/src/androidTest/kotlin/com/google/samples/apps/nowinandroid/feature/search/impl/SearchScreenTest.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/feature/search/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/search/impl/SearchScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/feature/search/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/search/impl/SearchScreen.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/feature/search/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/search/impl/SearchViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/feature/search/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/search/impl/SearchViewModel.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/feature/topic/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/topic/impl/TopicScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/feature/topic/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/topic/impl/TopicScreen.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/feature/topic/impl/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/feature/topic/impl/build.gradle.kts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/feature/topic/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/topic/impl/TopicViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/feature/topic/impl/src/main/kotlin/com/google/samples/apps/nowinandroid/feature/topic/impl/TopicViewModel.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gradle.properties" beforeDir="false" afterPath="$PROJECT_DIR$/gradle.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/local.properties" beforeDir="false" afterPath="$PROJECT_DIR$/local.properties" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -129,6 +112,7 @@
     "RunOnceActivity.cidr.known.project.marker": "true",
     "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "cf.first.check.clang-format": "false",
     "cidr.known.project.marker": "true",
     "copilot.chat.legacySessionMetadata.migrated": "true",
@@ -219,6 +203,15 @@
       <option name="presentableId" value="Default" />
       <updated>1785430706253</updated>
     </task>
+    <task id="LOCAL-00001" summary="task: Initial work">
+      <option name="closed" value="true" />
+      <created>1785947396594</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1785947396594</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -231,6 +224,10 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="task: Initial work" />
+    <option name="LAST_COMMIT_MESSAGE" value="task: Initial work" />
   </component>
   <component name="play_dynamic_filters_status">
     <option name="appIdToCheckInfo">

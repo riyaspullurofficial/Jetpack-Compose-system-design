@@ -24,9 +24,11 @@ android {
 }
 
 dependencies {
+    implementation(projects.core.domain)
     implementation(projects.core.data)
     implementation(projects.feature.bookmarks.api)
     implementation(projects.feature.topic.api)
+    implementation(libs.androidx.activity.compose)
 
     testImplementation(projects.core.testing)
 

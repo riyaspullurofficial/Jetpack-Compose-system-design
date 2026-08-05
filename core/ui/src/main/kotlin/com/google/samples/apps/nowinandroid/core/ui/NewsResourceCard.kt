@@ -165,23 +165,31 @@ fun NewsResourceCardExpanded(
                         }
                     }
 
-                    if (!isSelectionMode && isBookmarked) {
+                    if (isBookmarked) {
                         Surface(
-                            onClick = onNoteClick,
+                            onClick = if (isSelectionMode) onToggleSelection else onNoteClick,
                             color = Color.Transparent,
                         ) {
-                            Text(
-                                text = if (userNewsResource.bookmarkNote.isNullOrBlank()) {
-                                    stringResource(R.string.core_ui_add_note)
-                                } else {
-                                    userNewsResource.bookmarkNote.orEmpty()
-                                },
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier
-                                    .padding(vertical = 4.dp)
-                                    .fillMaxWidth(),
-                            )
+                            val noteText = userNewsResource.bookmarkNote
+                            if (!noteText.isNullOrBlank()) {
+                                Text(
+                                    text = noteText,
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier
+                                        .padding(vertical = 4.dp)
+                                        .fillMaxWidth(),
+                                )
+                            } else if (!isSelectionMode) {
+                                Text(
+                                    text = stringResource(R.string.core_ui_add_note),
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier
+                                        .padding(vertical = 4.dp)
+                                        .fillMaxWidth(),
+                                )
+                            }
                         }
                     }
 

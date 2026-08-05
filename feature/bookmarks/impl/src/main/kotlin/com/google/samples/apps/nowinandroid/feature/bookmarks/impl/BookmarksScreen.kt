@@ -16,6 +16,7 @@
 
 package com.google.samples.apps.nowinandroid.feature.bookmarks.impl
 
+import androidx.activity.compose.BackHandler
 import androidx.annotation.VisibleForTesting
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.Orientation
@@ -165,6 +166,12 @@ internal fun BookmarksScreen(
 
     LifecycleEventEffect(Lifecycle.Event.ON_STOP) {
         clearUndoState()
+    }
+
+    if (isSelectionMode) {
+        BackHandler {
+            toggleSelectionMode()
+        }
     }
 
     noteToEdit?.let { (id, note) ->

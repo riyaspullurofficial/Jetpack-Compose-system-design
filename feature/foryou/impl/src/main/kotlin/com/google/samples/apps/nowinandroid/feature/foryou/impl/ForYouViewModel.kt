@@ -27,6 +27,8 @@ import com.google.samples.apps.nowinandroid.core.data.repository.UserDataReposit
 import com.google.samples.apps.nowinandroid.core.data.repository.UserNewsResourceRepository
 import com.google.samples.apps.nowinandroid.core.data.util.SyncManager
 import com.google.samples.apps.nowinandroid.core.domain.GetFollowableTopicsUseCase
+import com.google.samples.apps.nowinandroid.core.domain.UpdateBookmarkNoteUseCase
+import com.google.samples.apps.nowinandroid.core.domain.UpdateNewsResourceBookmarkUseCase
 import com.google.samples.apps.nowinandroid.core.notifications.DEEP_LINK_NEWS_RESOURCE_ID_KEY
 import com.google.samples.apps.nowinandroid.core.ui.NewsFeedUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -53,6 +55,8 @@ class ForYouViewModel @Inject constructor(
     private val userDataRepository: UserDataRepository,
     userNewsResourceRepository: UserNewsResourceRepository,
     getFollowableTopics: GetFollowableTopicsUseCase,
+    private val updateNewsResourceBookmarkUseCase: UpdateNewsResourceBookmarkUseCase,
+    private val updateBookmarkNoteUseCase: UpdateBookmarkNoteUseCase,
 ) : ViewModel() {
 
     private val shouldShowOnboarding: Flow<Boolean> =
@@ -113,8 +117,16 @@ class ForYouViewModel @Inject constructor(
                 initialValue = OnboardingUiState.Loading,
             )
 
-    var noteToEdit by mutableStateOf<Pair<String, String>?>(null)
-        private set
+    var noteToEdit: Pair<String, String>?
+        get() {
+            val id = savedStateHandle.get<String>(NOTE_TO_EDIT_ID_KEY)
+            val note = savedStateHandle.get<String>(NOTE_TO_EDIT_NOTE_KEY)
+            return if (id != null && note != null) id to note else null
+        }
+        private set(value) {
+            savedStateHandle.set(NOTE_TO_EDIT_ID_KEY, value?.first)
+            savedStateHandle.set(NOTE_TO_EDIT_NOTE_KEY, value?.second)
+        }
 
     fun updateTopicSelection(topicId: String, isChecked: Boolean) {
         viewModelScope.launch {
@@ -124,7 +136,7 @@ class ForYouViewModel @Inject constructor(
 
     fun updateNewsResourceSaved(newsResourceId: String, isChecked: Boolean) {
         viewModelScope.launch {
-            userDataRepository.setNewsResourceBookmarked(newsResourceId, isChecked)
+            updateNewsResourceBookmarkUseCase(newsResourceId, isChecked)
             if (isChecked) {
                 noteToEdit = newsResourceId to ""
             }
@@ -133,14 +145,14 @@ class ForYouViewModel @Inject constructor(
 
     fun saveNote(newsResourceId: String, note: String) {
         viewModelScope.launch {
-            userDataRepository.setBookmarkNote(newsResourceId, note)
+            updateBookmarkNoteUseCase.saveNote(newsResourceId, note)
             dismissNoteEdit()
         }
     }
 
     fun deleteNote(newsResourceId: String) {
         viewModelScope.launch {
-            userDataRepository.deleteBookmarkNote(newsResourceId)
+            updateBookmarkNoteUseCase.deleteNote(newsResourceId)
             dismissNoteEdit()
         }
     }
@@ -174,6 +186,9 @@ class ForYouViewModel @Inject constructor(
         }
     }
 }
+
+private const val NOTE_TO_EDIT_ID_KEY = "noteToEditId"
+private const val NOTE_TO_EDIT_NOTE_KEY = "noteToEditNote"
 
 private fun AnalyticsHelper.logNewsDeepLinkOpen(newsResourceId: String) =
     logEvent(

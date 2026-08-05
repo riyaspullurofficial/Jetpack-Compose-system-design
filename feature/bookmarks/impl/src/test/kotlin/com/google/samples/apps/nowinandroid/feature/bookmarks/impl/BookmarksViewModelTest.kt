@@ -16,7 +16,12 @@
 
 package com.google.samples.apps.nowinandroid.feature.bookmarks.impl
 
+import androidx.lifecycle.SavedStateHandle
 import com.google.samples.apps.nowinandroid.core.data.repository.CompositeUserNewsResourceRepository
+import com.google.samples.apps.nowinandroid.core.domain.BulkRemoveBookmarksUseCase
+import com.google.samples.apps.nowinandroid.core.domain.RestoreBookmarksUseCase
+import com.google.samples.apps.nowinandroid.core.domain.UpdateBookmarkNoteUseCase
+import com.google.samples.apps.nowinandroid.core.domain.UpdateNewsResourceBookmarkUseCase
 import com.google.samples.apps.nowinandroid.core.testing.data.newsResourcesTestData
 import com.google.samples.apps.nowinandroid.core.testing.repository.TestNewsRepository
 import com.google.samples.apps.nowinandroid.core.testing.repository.TestUserDataRepository
@@ -50,13 +55,23 @@ class BookmarksViewModelTest {
         newsRepository = newsRepository,
         userDataRepository = userDataRepository,
     )
+    private val updateNewsResourceBookmarkUseCase = UpdateNewsResourceBookmarkUseCase(userDataRepository)
+    private val bulkRemoveBookmarksUseCase = BulkRemoveBookmarksUseCase(userDataRepository)
+    private val restoreBookmarksUseCase = RestoreBookmarksUseCase(userDataRepository)
+    private val updateBookmarkNoteUseCase = UpdateBookmarkNoteUseCase(userDataRepository)
+
     private lateinit var viewModel: BookmarksViewModel
 
     @Before
     fun setup() {
         viewModel = BookmarksViewModel(
+            savedStateHandle = SavedStateHandle(),
             userDataRepository = userDataRepository,
             userNewsResourceRepository = userNewsResourceRepository,
+            updateNewsResourceBookmarkUseCase = updateNewsResourceBookmarkUseCase,
+            bulkRemoveBookmarksUseCase = bulkRemoveBookmarksUseCase,
+            restoreBookmarksUseCase = restoreBookmarksUseCase,
+            updateBookmarkNoteUseCase = updateBookmarkNoteUseCase,
         )
     }
 

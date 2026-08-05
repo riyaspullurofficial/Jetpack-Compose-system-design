@@ -30,6 +30,8 @@ import com.google.samples.apps.nowinandroid.core.data.repository.SearchContentsR
 import com.google.samples.apps.nowinandroid.core.data.repository.UserDataRepository
 import com.google.samples.apps.nowinandroid.core.domain.GetRecentSearchQueriesUseCase
 import com.google.samples.apps.nowinandroid.core.domain.GetSearchContentsUseCase
+import com.google.samples.apps.nowinandroid.core.domain.UpdateBookmarkNoteUseCase
+import com.google.samples.apps.nowinandroid.core.domain.UpdateNewsResourceBookmarkUseCase
 import com.google.samples.apps.nowinandroid.core.model.data.UserSearchResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
@@ -51,6 +53,8 @@ class SearchViewModel @Inject constructor(
     private val userDataRepository: UserDataRepository,
     private val savedStateHandle: SavedStateHandle,
     private val analyticsHelper: AnalyticsHelper,
+    private val updateNewsResourceBookmarkUseCase: UpdateNewsResourceBookmarkUseCase,
+    private val updateBookmarkNoteUseCase: UpdateBookmarkNoteUseCase,
 ) : ViewModel() {
 
     val searchQuery = savedStateHandle.getStateFlow(key = SEARCH_QUERY, initialValue = "")
@@ -118,12 +122,20 @@ class SearchViewModel @Inject constructor(
         }
     }
 
-    var noteToEdit by mutableStateOf<Pair<String, String>?>(null)
-        private set
+    var noteToEdit: Pair<String, String>?
+        get() {
+            val id = savedStateHandle.get<String>(NOTE_TO_EDIT_ID_KEY)
+            val note = savedStateHandle.get<String>(NOTE_TO_EDIT_NOTE_KEY)
+            return if (id != null && note != null) id to note else null
+        }
+        private set(value) {
+            savedStateHandle.set(NOTE_TO_EDIT_ID_KEY, value?.first)
+            savedStateHandle.set(NOTE_TO_EDIT_NOTE_KEY, value?.second)
+        }
 
     fun setNewsResourceBookmarked(newsResourceId: String, isChecked: Boolean) {
         viewModelScope.launch {
-            userDataRepository.setNewsResourceBookmarked(newsResourceId, isChecked)
+            updateNewsResourceBookmarkUseCase(newsResourceId, isChecked)
             if (isChecked) {
                 noteToEdit = newsResourceId to ""
             }
@@ -132,14 +144,14 @@ class SearchViewModel @Inject constructor(
 
     fun saveNote(newsResourceId: String, note: String) {
         viewModelScope.launch {
-            userDataRepository.setBookmarkNote(newsResourceId, note)
+            updateBookmarkNoteUseCase.saveNote(newsResourceId, note)
             dismissNoteEdit()
         }
     }
 
     fun deleteNote(newsResourceId: String) {
         viewModelScope.launch {
-            userDataRepository.deleteBookmarkNote(newsResourceId)
+            updateBookmarkNoteUseCase.deleteNote(newsResourceId)
             dismissNoteEdit()
         }
     }
@@ -175,3 +187,5 @@ private const val SEARCH_QUERY_MIN_LENGTH = 2
 /** Minimum number of the fts table's entity count where it's considered as search is not ready */
 private const val SEARCH_MIN_FTS_ENTITY_COUNT = 1
 private const val SEARCH_QUERY = "searchQuery"
+private const val NOTE_TO_EDIT_ID_KEY = "noteToEditId"
+private const val NOTE_TO_EDIT_NOTE_KEY = "noteToEditNote"
